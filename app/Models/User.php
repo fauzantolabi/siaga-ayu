@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
@@ -17,10 +18,20 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    use Notifiable, HasFactory, SoftDeletes;
+    protected $table = 'users';
     protected $fillable = [
-        'name',
+
         'email',
         'password',
+        'username',
+        'fullname',
+        'phone',
+        'foto',
+        'role_id',
+        'id_perangkat_daerah',
+        'created_at',
+        'updated_at'
     ];
 
     /**
@@ -44,5 +55,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    protected $dates = ['deleted_at'];
+
+    public function agendas()
+    {
+        return $this->hasMany(Agenda::class, 'id_user');
+    }
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+    public function perangkatDaerah()
+    {
+        return $this->belongsTo(Perangkat_Daerah::class, 'id_perangkat_daerah');
     }
 }
