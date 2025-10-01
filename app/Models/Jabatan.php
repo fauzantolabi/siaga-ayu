@@ -10,8 +10,8 @@ class Jabatan extends Model
     use SoftDeletes;
     protected $table = 'jabatans';
     protected $fillable = [
-        'nama_jabatan',
-        'deskripsi',
+        'jabatan',
+        // 'prioritas',
         'id_perangkat_daerah',
         'created_at',
         'updated_at'

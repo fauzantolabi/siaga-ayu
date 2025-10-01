@@ -10,10 +10,8 @@ class Perangkat_Daerah extends Model
     use SoftDeletes;
     protected $table = 'perangkat_daerahs';
     protected $fillable = [
-        'nama_perangkat_daerah',
-        'alamat',
-        'telepon',
-        'email',
+        'perangkat_daerah',
+        'singkatan',
         'created_at',
         'updated_at'
     ];

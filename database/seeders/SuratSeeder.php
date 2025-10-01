@@ -13,6 +13,7 @@ class SuratSeeder extends Seeder
     {
         \DB::table('surats')->insert([
             [
+                'asal_surat' => 'Dinas Pendidikan',
                 'nomor_surat' => '1',
                 'perihal' => 'Bupati',
                 'tanggal_surat' => '1',
@@ -23,6 +24,7 @@ class SuratSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'asal_surat' => 'Dinas Kesehatan',
                 'nomor_surat' => '1',
                 'perihal' => 'Wakil Bupati',
                 'tanggal_surat' => '1',

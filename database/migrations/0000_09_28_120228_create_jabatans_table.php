@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('jabatan')->unique()->fillable();
             $table->unsignedBigInteger('id_perangkat_daerah');
             $table->foreign('id_perangkat_daerah')->references('id')->on('perangkat_daerahs')->onDelete('cascade');
+            $table->text('prioritas')->nullable()->fillable();
             $table->softDeletes();
             $table->timestamps();
         });

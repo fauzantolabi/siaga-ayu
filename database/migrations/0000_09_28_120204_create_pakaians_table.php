@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('pakaians', function (Blueprint $table) {
             $table->id();
             $table->string('pakaian')->fillable();
+            $table->string('singkatan')->nullable()->fillable();
             $table->softDeletes();
             $table->timestamps();
         });

@@ -70,4 +70,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Perangkat_Daerah::class, 'id_perangkat_daerah');
     }
+
+    public function index()
+    {
+        $perangkatDaerah = PerangkatDaerah::all(); // ambil data dari DB
+        return view('perangkat.index', compact('perangkatDaerah'));
+    }
 }

@@ -12,6 +12,7 @@ return new class extends Migration {
     {
         Schema::create('surats', function (Blueprint $table) {
             $table->id();
+            $table->string('asal_surat')->fillable();
             $table->string('nomor_surat')->fillable();
             $table->string('perihal')->nullable()->fillable();
             $table->date('tanggal_surat')->nullable()->fillable();

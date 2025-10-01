@@ -10,13 +10,13 @@ class Surat extends Model
     use SoftDeletes;
     protected $table = 'surats';
     protected $fillable = [
+        'asal_surat',
         'nomor_surat',
-        'tanggal_surat',
         'perihal',
-        'tujuan',
-        'isi_surat',
-        'id_perangkat_daerah',
-        'id_user',
+        'tanggal_surat',
+        'tanggal_terima',
+        'sifat_surat',
+        'hal',
         'created_at',
         'updated_at'
     ];
@@ -26,12 +26,5 @@ class Surat extends Model
     {
         return $this->hasMany(Agenda::class, 'id_surat');
     }
-    public function perangkat_daerah()
-    {
-        return $this->belongsTo(Perangkat_Daerah::class, 'id_perangkat_daerah');
-    }
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'id_user');
-    }
+
 }
