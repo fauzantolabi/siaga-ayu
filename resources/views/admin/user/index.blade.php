@@ -25,6 +25,13 @@
     <section class="section">
         <div class="card">
             <div class="card-body">
+                @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <p><i class="bi bi-check-circle-fill"></i>{{ session('success') }}</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                @endif
                 <table class="table table-striped" id="table1">
                     <thead>
                         <tr>
@@ -45,10 +52,10 @@
                             <td>{{ $item->fullname }}</td>
                             <td>{{ $item->role->role_name }}</td>
                             <td>
-                                <a href="{{ route('agenda.edit', $item->id) }}" class="btn btn-sm btn-warning">
+                                <a href="{{ route('user.edit', $item->id) }}" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </a>
-                                <form action="{{ route('agenda.destroy', $item->id) }}" method="POST" class="d-inline">
+                                <form action="{{ route('user.destroy', $item->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus agenda ini?')">

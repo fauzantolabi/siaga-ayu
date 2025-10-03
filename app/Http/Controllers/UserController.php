@@ -39,18 +39,10 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role_id' => 'required|string',
-            'id_perangkat_daerah' => 'required|string',
+            'role_id' => 'required|integer',
+            'id_perangkat_daerah' => 'required|integer',
             'phone' => 'nullable|string|max:15',
-        ], [
-            'role_id.required' => 'The role field is required.',
-            'id_perangkat_daerah.required' => 'The perangkat daerah field is required.',
-            'phone.max' => 'The phone number may not be greater than 15 characters.',
-            'phone.string' => 'The phone number must be a string.',
-            'phone.nullable' => 'The phone number field can be left empty.',
-            'foto.image' => 'The foto must be an image.',
-            'foto.mimes' => 'The foto must be a file of type: jpeg, png, jpg, gif, svg.',
-            'foto.max' => 'The foto may not be greater than 2MB.',
+            // 'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $user = new User();
@@ -58,10 +50,19 @@ class UserController extends Controller
         $user->username = $request->username;
         $user->email = $request->email;
         $user->password = bcrypt($request->password);
-        $user->role = $request->role;
+        $user->role_id = $request->role_id;
+        $user->id_perangkat_daerah = $request->id_perangkat_daerah;
+        $user->phone = $request->phone;
+
+        // kalau ada upload foto
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('users', 'public');
+            $user->foto = $path;
+        }
+
         $user->save();
 
-        return redirect()->route('admin.user.index')->with('success', 'User created successfully.');
+        return redirect()->route('user.index')->with('success', 'User berhasil ditambahkan.');
     }
 
     /**
@@ -77,7 +78,10 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        $perangkatDaerah = Perangkat_Daerah::all();
+        $roles = Role::all();
+        return view('admin.user.edit', compact('user', 'perangkatDaerah', 'roles'));
     }
 
     /**
@@ -85,7 +89,38 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'fullname' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'role_id' => 'required|string',
+            'id_perangkat_daerah' => 'required|string',
+            'phone' => 'nullable|string|max:15',
+        ], [
+            'role_id.required' => 'The role field is required.',
+            'id_perangkat_daerah.required' => 'The perangkat daerah field is required.',
+            'phone.max' => 'The phone number may not be greater than 15 characters.',
+            'phone.string' => 'The phone number must be a string.',
+            'phone.nullable' => 'The phone number field can be left empty.',
+            'foto.image' => 'The foto must be an image.',
+            'foto.mimes' => 'The foto must be a file of type: jpeg, png, jpg, gif, svg.',
+            'foto.max' => 'The foto may not be greater than 2MB.',
+
+        ]);
+        $user = User::findOrFail($id);
+        $user->fullname = $request->fullname;
+        $user->username = $request->username;
+        $user->email = $request->email;
+        if ($request->password) {
+            $user->password = bcrypt($request->password);
+        }
+        $user->role_id = $request->role_id;
+        $user->id_perangkat_daerah = $request->id_perangkat_daerah;
+        $user->phone = $request->phone;
+        $user->save();
+
+        return redirect()->route('user.index')->with('success', 'User berhasil diubah.');
     }
 
     /**
@@ -93,7 +128,10 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('admin.user.index')->with('success', ' User berhasil dihapus');
     }
 
 

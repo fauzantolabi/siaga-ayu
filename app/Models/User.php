@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Role;
 
 class User extends Authenticatable
 {
@@ -69,11 +70,6 @@ class User extends Authenticatable
     public function perangkatDaerah()
     {
         return $this->belongsTo(Perangkat_Daerah::class, 'id_perangkat_daerah');
-    }
 
-    public function index()
-    {
-        $perangkatDaerah = PerangkatDaerah::all(); // ambil data dari DB
-        return view('perangkat.index', compact('perangkatDaerah'));
     }
 }

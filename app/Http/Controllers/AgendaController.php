@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Agenda;
+use App\Models\Jabatan;
+use App\Models\Pakaian;
+use App\Models\Surat;
 
 class AgendaController extends Controller
 {
@@ -13,7 +16,10 @@ class AgendaController extends Controller
     public function index()
     {
         $agendas = Agenda::orderBy('id', 'asc')->get();
-        return view('admin.agenda.index', compact('agendas'));
+        $jabatan = Jabatan::all();
+        $pakaian = Pakaian::all();
+        $surat = Surat::all();
+        return view('admin.agenda.index', compact('agendas', 'jabatan', 'pakaian', 'surat'));
     }
 
     /**
