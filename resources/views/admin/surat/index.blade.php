@@ -52,6 +52,10 @@
                             <td>{{ $item->tanggal_surat }}</td>
                             <td>{{ $item->perihal }}</td>
                             <td>
+                                <a href="{{ route('agenda.createBySurat', $item->id) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-calendar-plus"></i> Buat Agenda
+                                </a>
+
                                 <a href="{{ route('surat.edit', $item->id) }}" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </a>

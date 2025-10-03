@@ -14,12 +14,12 @@
                 <h3>Agenda</h3>
                 <p class="text-subtitle text-muted">Daftar Agenda Yang Telah Dibuat</p>
             </div>
-            <div class="col-12 col-md-6 order-md-2 order-first">
+            {{-- <div class="col-12 col-md-6 order-md-2 order-first">
                 <a href="{{route('agenda.create')}}" class="btn btn-primary float-start float-lg-end">
                 <i class="bi bi-plus"></i>
                 Tambah Agenda
                 </a>
-            </div>
+            </div> --}}
         </div>
     </div>
     <section class="section">
@@ -31,10 +31,9 @@
                             <th>No</th>
                             <th>Tgl Agenda</th>
                             <th>Pejabat</th>
-                            <th>Acara</th>
+                            <th>Agenda</th>
                             <th>Tempat</th>
-                            <th>Pakain</th>
-                            <th>Surat</th>
+                            {{-- <th>Pakain</th> --}}
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -42,12 +41,16 @@
                         @foreach ($agendas as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d F Y') }}</td>
-                            <td>{{ $item->pejabat }}</td>
-                            <td>{{ $item->acara }}</td>
+                          <td>
+                            {{ \Carbon\Carbon::parse($item->tanggal)
+                                ->locale('id')
+                                ->translatedFormat('l, d F Y') }}
+                            {{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB
+                        </td>
+                            <td>{{ $item->jabatan->jabatan}}</td>
+                            <td>{{ $item->agenda }}</td>
                             <td>{{ $item->tempat }}</td>
-                            <td>{{ $item->pakaian }}</td>
-                            <td>{{ $item->surat }}</td>
+                            {{-- <td>{{ $item->pakaian->pakaian }}</td> --}}
                             <td>
                                 <a href="{{ route('agenda.edit', $item->id) }}" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil-square"></i> Edit

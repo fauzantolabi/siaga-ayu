@@ -9,15 +9,22 @@ class Agenda extends Model
 {
     use SoftDeletes;
     protected $table = 'agendas';
+
+    public function scopeNearest($query)
+    {
+        return $query->orderByRaw("CONCAT(tanggal, ' ', waktu) ASC");
+    }
     protected $fillable = [
         'id_surat',
-        'tanggal_agenda',
-        'waktu_agenda',
-        'tempat_agenda',
-        'keterangan',
         'id_user',
+        'tanggal',
+        'waktu',
+        'agenda',
+        'tempat',
         'id_pakaian',
         'id_jabatan',
+        'resume',
+        'foto',
         'created_at',
         'updated_at'
     ];
@@ -36,7 +43,7 @@ class Agenda extends Model
     }
     public function jabatan()
     {
-        return $this->belongsTo(Jabatan::class, 'id_jabatan');
+        return $this->belongsTo(Jabatan::class, 'id_jabatan', 'id');
     }
 
 

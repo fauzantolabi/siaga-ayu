@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->foreign('id_user')->references('id')->on('users')->onDelete('set null');
             $table->date('tanggal')->fillable();
             $table->time('waktu')->nullable();
-            $table->string('agenda')->unique();
+            $table->string('agenda')->nullable()->fillable();
             $table->unsignedBigInteger('id_jabatan')->nullable();
             $table->foreign('id_jabatan')->references('id')->on('jabatans')->onDelete('set null');
             $table->string('tempat')->nullable()->fillable();

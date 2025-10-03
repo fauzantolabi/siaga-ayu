@@ -50,6 +50,13 @@
                             </a>
                         </li>
 
+                         <li class="sidebar-item {{ request()->routeIs('surat.*') ? 'active' : '' }}">
+                            <a href="{{route('surat.index')}}" class='sidebar-link'>
+                                <i class="bi bi-mailbox2"></i>
+                                <span>Surat</span>
+                            </a>
+                        </li>
+
                         <li class="sidebar-item {{ request()->routeIs('agenda.*') ? 'active' : '' }}">
                             <a href="{{route('agenda.index')}}" class='sidebar-link'>
                                 <i class="bi bi-card-list"></i>
@@ -61,13 +68,6 @@
                             <a href="{{route('perangkat_daerah.index')}}" class='sidebar-link'>
                                 <i class="bi bi-house-fill"></i>
                                 <span>Perangkat Daerah</span>
-                            </a>
-                        </li>
-
-                        <li class="sidebar-item {{ request()->routeIs('surat.*') ? 'active' : '' }}">
-                            <a href="{{route('surat.index')}}" class='sidebar-link'>
-                                <i class="bi bi-mailbox2"></i>
-                                <span>Surat</span>
                             </a>
                         </li>
 
