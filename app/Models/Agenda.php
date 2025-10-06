@@ -45,6 +45,11 @@ class Agenda extends Model
     {
         return $this->belongsTo(Jabatan::class, 'id_jabatan', 'id');
     }
+    public function photos()
+    {
+        return $this->hasMany(AgendaPhoto::class);
+    }
+
 
 
 }

@@ -8,15 +8,14 @@ use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\PakaianController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 // Admin Routes
-Route::get('/dashboard', function () {
-    return view('admin.dashboard');
-})->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 // Surat
 Route::resource('surat', SuratController::class);

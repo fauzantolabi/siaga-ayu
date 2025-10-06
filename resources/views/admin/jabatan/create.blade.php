@@ -18,13 +18,20 @@
         <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label for="basicInput">Perangkat Daerah</label>
-                            <select class="form-select" id="perangkat_daerah" name="id_perangkat_daerah" required>
-                                <option value="" disabled selected>Pilih Perangkat Daerah</option>
-                                @foreach($perangkat_daerah as $pd)
-                                    <option value="{{ $pd->id }}">{{ $pd->perangkat_daerah }}</option>
-                                @endforeach
-                            </select>
+                            <label for="id_perangkat_daerah">Perangkat Daerah</label>
+                            @if(Auth::user()->role->role_name === 'User')
+                                {{-- 🔒 User tidak bisa ubah perangkat daerah --}}
+                                <input type="text" class="form-control" value="{{ Auth::user()->perangkatDaerah->perangkat_daerah }}" readonly>
+                                <input type="hidden" name="id_perangkat_daerah" value="{{ Auth::user()->id_perangkat_daerah }}">
+                            @else
+                                {{-- 👨‍💼 Admin bisa pilih --}}
+                                <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
+                                    <option value="">-- Pilih Perangkat Daerah --</option>
+                                    @foreach($perangkatDaerah as $pd)
+                                        <option value="{{ $pd->id }}">{{ $pd->singkatan }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
                         <div class="form-group">
                             <label for="basicInput">Jabatan</label>

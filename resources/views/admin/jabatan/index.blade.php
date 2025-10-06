@@ -46,7 +46,7 @@
                         @foreach ($jabatans as $item)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->perangkat_daerah->perangkat_daerah }}</td>
+                            <td>{{ $item->perangkatDaerah->perangkat_daerah }}</td>
                             <td>{{ $item->jabatan}}</td>
                             <td>
                                 <a href="{{ route('jabatan.edit', $item->id) }}" class="btn btn-sm btn-warning">
