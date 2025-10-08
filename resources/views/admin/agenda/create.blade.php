@@ -29,19 +29,27 @@
       <div class="row">
         <div class="col-md-6">
 
-          {{-- Surat terkait (loop dari $surats) --}}
-          <div class="form-group mb-3">
-            <label for="id_surat">Asal Surat</label>
+  <div class="form-group mb-3">
+        <label for="id_surat">Asal Surat</label>
+
+        @if(Auth::user()->role->role_name === 'User')
+            {{-- 🔒 User tidak bisa ubah surat --}}
+            <input type="text" class="form-control" value="{{$selectedSurat->nomor_surat}} - {{ $selectedSurat->asal_surat }}" readonly>
+            <input type="hidden" name="id_surat" value="{{ $selectedSurat->id }}">
+        @else
+            {{-- 👨‍💼 Admin bisa pilih surat --}}
             <select name="id_surat" id="id_surat" class="form-control" required>
-              <option value="">-- Pilih Surat --</option>
-              @foreach($surats as $s)
-                <option value="{{ $s->id }}"
-                  {{ (isset($selectedSurat) && $selectedSurat && $selectedSurat->id == $s->id) ? 'selected' : '' }}>
-                  {{ $s->nomor_surat }} - {{ $s->asal_surat }}
-                </option>
-              @endforeach
+                <option value="">-- Pilih Surat --</option>
+                @foreach($surats as $s)
+                    <option value="{{ $s->id }}"
+                        {{ (isset($selectedSurat) && $selectedSurat && $selectedSurat->id == $s->id) ? 'selected' : '' }}>
+                        {{ $s->nomor_surat }} - {{ $s->asal_surat }}
+                    </option>
+                @endforeach
             </select>
-          </div>
+        @endif
+    </div>
+
           
           {{-- Nama Agenda --}}
           <div class="form-group mb-3">
@@ -65,31 +73,31 @@
 
         <div class="col-md-6">
           {{-- Perangkat Daerah & Jabatan --}}
-         <div class="form-group">
-                            <label for="id_perangkat_daerah">Perangkat Daerah</label>
-                            @if(Auth::user()->role->role_name === 'User')
-                                {{-- 🔒 User tidak bisa ubah perangkat daerah --}}
-                                <input type="text" class="form-control" value="{{ Auth::user()->perangkatDaerah->singkatan }}" readonly>
-                                <input type="hidden" name="id_perangkat_daerah" value="{{ Auth::user()->id_perangkat_daerah }}">
-                            @else
-                                {{-- 👨‍💼 Admin bisa pilih --}}
-                                <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
-                                    <option value="">-- Pilih Perangkat Daerah --</option>
-                                    @foreach($perangkatDaerah as $pd)
-                                        <option value="{{ $pd->id }}">{{ $pd->singkatan }}</option>
-                                    @endforeach
-                                </select>
-                            @endif
-                        </div>
-                        <div class="form-group mt-3">
-                            <label for="id_jabatan">Jabatan Disposisi Agenda</label>
-                            <select name="id_jabatan" id="id_jabatan" class="form-control" required>
-                                <option value="">-- Pilih Jabatan --</option>
-                                @foreach($jabatans as $jabatan)
-                                    <option value="{{ $jabatan->id }}">{{ $jabatan->jabatan }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+         <div class="form-group mt-3">
+            <label for="id_perangkat_daerah">Perangkat Daerah</label>
+            @if(Auth::user()->role->role_name === 'User')
+                {{-- 🔒 User tidak bisa ubah perangkat daerah --}}
+                <input type="text" class="form-control" value="{{ Auth::user()->perangkatDaerah->singkatan }}" readonly>
+                <input type="hidden" name="id_perangkat_daerah" value="{{ Auth::user()->id_perangkat_daerah }}">
+            @else
+                {{-- 👨‍💼 Admin bisa pilih --}}
+                <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
+                    <option value="">-- Pilih Perangkat Daerah --</option>
+                    @foreach($perangkatDaerah as $pd)
+                        <option value="{{ $pd->id }}">{{ $pd->singkatan }}</option>
+                    @endforeach
+                </select>
+            @endif
+        </div>
+        <div class="form-group mt-3">
+            <label for="id_jabatan">Jabatan Disposisi Agenda</label>
+            <select name="id_jabatan" id="id_jabatan" class="form-control" required>
+                <option value="">-- Pilih Jabatan --</option>
+                @foreach($jabatans as $jabatan)
+                    <option value="{{ $jabatan->id }}">{{ $jabatan->jabatan }}</option>
+                @endforeach
+            </select>
+        </div>
 
           {{-- Tempat --}}
           <div class="form-group mb-3">

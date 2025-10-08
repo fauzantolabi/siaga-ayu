@@ -14,12 +14,14 @@ class PerangkatDaerahSeeder extends Seeder
     {
         \DB::table('perangkat_daerahs')->insert([
             [
-                'perangkat_daerah' => 'Dinas Pendidikan',
+                'perangkat_daerah' => 'Kabupaten Indramayu',
+                'singkatan' => 'Kab. Indramayu',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'perangkat_daerah' => 'Dinas Kesehatan',
+                'perangkat_daerah' => 'Sekretariat Daerah',
+                'singkatan' => 'Setda',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

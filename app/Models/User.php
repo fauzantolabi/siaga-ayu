@@ -2,31 +2,22 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Role;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    use Notifiable, HasFactory, SoftDeletes;
     protected $table = 'users';
-    protected $fillable = [
 
+    protected $fillable = [
+        'fullname',
+        'username',
         'email',
         'password',
-        'username',
-        'fullname',
         'phone',
         'foto',
         'role_id',
@@ -35,21 +26,8 @@ class User extends Authenticatable
         'updated_at'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -57,19 +35,30 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     protected $dates = ['deleted_at'];
 
-    public function agendas()
-    {
-        return $this->hasMany(Agenda::class, 'id_user');
-    }
+    // Relasi ke Role
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
     }
+
+    // Relasi ke Perangkat Daerah
     public function perangkatDaerah()
     {
-        return $this->belongsTo(Perangkat_Daerah::class, 'id_perangkat_daerah');
+        return $this->belongsTo(PerangkatDaerah::class, 'id_perangkat_daerah');
+    }
 
+    // Relasi ke Agenda
+    public function agendas()
+    {
+        return $this->hasMany(Agenda::class, 'id_user');
+    }
+
+    // Relasi ke Surat
+    public function surats()
+    {
+        return $this->hasMany(Surat::class, 'id_user');
     }
 }

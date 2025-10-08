@@ -31,7 +31,7 @@
                             <label for="basicInput">Perangkat Daerah</label>
                             <select class="form-select" id="perangkat_daerah" name="id_perangkat_daerah" required>
                                 <option value="" disabled selected>Pilih Perangkat Daerah</option>
-                                @foreach($perangkat_daerah as $pd)
+                                @foreach($perangkatDaerah as $pd)
                                     <option value="{{ $pd->id }}" {{ $pd->id == $jabatan->id_perangkat_daerah ? 'selected' : '' }}>{{ $pd->perangkat_daerah }}</option>
                                 @endforeach
                             </select>

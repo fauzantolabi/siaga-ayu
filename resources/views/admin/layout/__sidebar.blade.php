@@ -83,7 +83,7 @@
 
                 {{-- Logout --}}
                 <li class="sidebar-item">
-                    <form action="{{ route('logout') }}" method="POST" class="d-inline" 
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline"
                           onsubmit="return confirm('Apakah Anda yakin ingin logout?');">
                         @csrf
                         <button type="submit" class="sidebar-link btn btn-link text-start w-100">

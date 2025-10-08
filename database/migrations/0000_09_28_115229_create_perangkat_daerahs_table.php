@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('perangkat_daerahs', function (Blueprint $table) {
             $table->id();
             $table->string('perangkat_daerah')->fillable();
+            $table->string('singkatan')->fillable();
             $table->softDeletes();
             $table->timestamps();
         });

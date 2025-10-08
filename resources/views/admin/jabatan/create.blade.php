@@ -12,6 +12,15 @@
 </div>
           <div class="card">
             <div class="card-body">
+                 @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                    </ul>
+                </div>
+                @endif
                 <form class="form" action="{{route('jabatan.store')}}" enctype="multipart/form-data" method="POST">
                     @csrf
                 <div class="form body">
@@ -28,7 +37,7 @@
                                 <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
                                     <option value="">-- Pilih Perangkat Daerah --</option>
                                     @foreach($perangkatDaerah as $pd)
-                                        <option value="{{ $pd->id }}">{{ $pd->singkatan }}</option>
+                                        <option value="{{ $pd->id }}">{{ $pd->perangkat_daerah }}</option>
                                     @endforeach
                                 </select>
                             @endif

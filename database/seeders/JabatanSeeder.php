@@ -14,14 +14,12 @@ class JabatanSeeder extends Seeder
             [
                 'id_perangkat_daerah' => '1',
                 'jabatan' => 'Bupati',
-                'prioritas' => '1',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id_perangkat_daerah' => '1',
                 'jabatan' => 'Wakil Bupati',
-                'prioritas' => '1',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

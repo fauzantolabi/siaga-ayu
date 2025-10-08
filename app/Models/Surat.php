@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Surat extends Model
 {
     use SoftDeletes;
+
     protected $table = 'surats';
+
     protected $fillable = [
         'asal_surat',
         'nomor_surat',
@@ -17,14 +19,26 @@ class Surat extends Model
         'tanggal_terima',
         'sifat_surat',
         'hal',
+        'id_jabatan',
+        'id_perangkat_daerah',
         'created_at',
         'updated_at'
     ];
+
     protected $dates = ['deleted_at'];
 
-    public function agendas()
+    public function user()
     {
-        return $this->hasMany(Agenda::class, 'id_surat');
+        return $this->belongsTo(User::class, 'id_user');
     }
 
+    public function jabatan()
+    {
+        return $this->belongsTo(Jabatan::class, 'id_jabatan');
+    }
+
+    public function perangkatDaerah()
+    {
+        return $this->belongsTo(PerangkatDaerah::class, 'id_perangkat_daerah');
+    }
 }

@@ -15,12 +15,14 @@ class PakaianSeeder extends Seeder
     {
         \DB::table('pakaians')->insert([
             [
-                'pakaian' => 'Pakaian Dinas Harian (PDH)',
+                'pakaian' => 'Pakaian Dinas Harian Khaki',
+                'singkatan' => 'PDH Khaki',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'pakaian' => 'Pakaian Dinas Sipil (PDS)',
+                'pakaian' => 'Pakaian Dinas Sipil',
+                'singkatan' => 'PDS',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

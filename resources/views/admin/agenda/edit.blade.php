@@ -32,16 +32,26 @@
                     {{-- Kolom kiri --}}
                     <div class="col-md-6">
                         {{-- Surat --}}
-                        <div class="form-group">
-                            <label for="id_surat">Pilih Surat</label>
-                            <select name="id_surat" id="id_surat" class="form-select" required>
-                                @foreach($surat as $s)
-                                    <option value="{{ $s->id }}" {{ $agenda->id_surat == $s->id ? 'selected' : '' }}>
-                                        {{ $s->nomor_surat }} - {{ $s->asal_surat }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <div class="form-group mb-3">
+        <label for="id_surat">Asal Surat</label>
+
+        @if(Auth::user()->role->role_name === 'User')
+            {{-- 🔒 User tidak bisa ubah surat --}}
+            <input type="text" class="form-control" value="{{$selectedSurat->nomor_surat}} - {{ $selectedSurat->asal_surat }}" readonly>
+            <input type="hidden" name="id_surat" value="{{ $selectedSurat->id }}">
+        @else
+            {{-- 👨‍💼 Admin bisa pilih surat --}}
+            <select name="id_surat" id="id_surat" class="form-control" required>
+                <option value="">-- Pilih Surat --</option>
+                @foreach($surats as $s)
+                    <option value="{{ $s->id }}"
+                        {{ (isset($selectedSurat) && $selectedSurat && $selectedSurat->id == $s->id) ? 'selected' : '' }}>
+                        {{ $s->nomor_surat }} - {{ $s->asal_surat }}
+                    </option>
+                @endforeach
+            </select>
+        @endif
+    </div>
 
                         {{-- Nama Agenda --}}
                         <div class="form-group">
@@ -75,17 +85,28 @@
                         </div>
 
                         {{-- Jabatan --}}
-                        <div class="form-group">
-                            <label for="id_jabatan">Jabatan</label>
-                            <select name="id_jabatan" id="id_jabatan" class="form-select">
-                                @foreach($jabatan as $j)
-                                    <option value="{{ $j->id }}" {{ $agenda->id_jabatan == $j->id ? 'selected' : '' }}>
-                                        {{ $j->jabatan }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                       {{-- Jabatan --}}
+<div class="form-group">
+    <label for="id_jabatan">Jabatan</label>
+    <select name="id_jabatan" id="id_jabatan" class="form-select">
+        <option value="">-- Pilih Jabatan --</option>
 
+        @if(isset($jabatans) && $jabatans->count())
+            @foreach($jabatans as $j)
+                <option value="{{ $j->id }}" {{ $agenda->id_jabatan == $j->id ? 'selected' : '' }}>
+                    {{ $j->jabatan }}
+                </option>
+            @endforeach
+        @else
+            {{-- fallback: tampilkan semua jika tidak ada filter (opsional) --}}
+            @foreach(\App\Models\Jabatan::all() as $j)
+                <option value="{{ $j->id }}" {{ $agenda->id_jabatan == $j->id ? 'selected' : '' }}>
+                    {{ $j->jabatan }}
+                </option>
+            @endforeach
+        @endif
+    </select>
+</div>
                         {{-- Pakaian --}}
                         <div class="form-group">
                             <label for="id_pakaian">Pakaian</label>
@@ -138,6 +159,7 @@
                 {{-- Tombol --}}
                 <div class="form-group d-flex justify-content-end mt-4">
                     <a href="{{ route('agenda.index') }}" class="btn btn-danger me-2">Batal</a>
+                     <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
                     <button type="submit" class="btn btn-primary">Update</button>
                 </div>
             </div>

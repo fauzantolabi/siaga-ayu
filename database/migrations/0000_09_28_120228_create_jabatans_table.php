@@ -12,10 +12,9 @@ return new class extends Migration {
     {
         Schema::create('jabatans', function (Blueprint $table) {
             $table->id();
-            $table->string('jabatan')->unique()->fillable();
+            $table->string('jabatan')->nullable()->fillable();
             $table->unsignedBigInteger('id_perangkat_daerah');
             $table->foreign('id_perangkat_daerah')->references('id')->on('perangkat_daerahs')->onDelete('cascade');
-            $table->text('prioritas')->nullable()->fillable();
             $table->softDeletes();
             $table->timestamps();
         });

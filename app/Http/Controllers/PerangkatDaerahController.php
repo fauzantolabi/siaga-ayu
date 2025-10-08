@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Perangkat_Daerah;
+use App\Models\PerangkatDaerah;
 use Illuminate\Validation\Validator;
 
 class PerangkatDaerahController extends Controller
@@ -13,7 +13,7 @@ class PerangkatDaerahController extends Controller
      */
     public function index()
     {
-        $perangkat_daerahs = Perangkat_Daerah::orderBy('id', 'asc')->get();
+        $perangkat_daerahs = PerangkatDaerah::orderBy('id', 'asc')->get();
         return view('admin.perangkat_daerah.index', compact('perangkat_daerahs'));
     }
 
@@ -43,11 +43,11 @@ class PerangkatDaerahController extends Controller
         );
 
         // Save the item to the database
-        $perangkat_daerah = Perangkat_Daerah::create($validatedData);
+        $perangkat_daerah = PerangkatDaerah::create($validatedData);
 
         // Redirect to the perangkat daerah index with success message
         return redirect()->route('perangkat_daerah.index')
-            ->with('success', 'Perangkat Daerah Berhasil Ditambahkan');
+            ->with('success', ' Perangkat Daerah Berhasil Ditambahkan');
 
     }
 
@@ -64,8 +64,8 @@ class PerangkatDaerahController extends Controller
      */
     public function edit(string $id)
     {
-        $perangkat_daerah = Perangkat_Daerah::findOrFail($id);
-        $perangkat_daerahs = Perangkat_Daerah::orderBy('id', 'asc')->get();
+        $perangkat_daerah = PerangkatDaerah::findOrFail($id);
+        $perangkat_daerahs = PerangkatDaerah::orderBy('id', 'asc')->get();
         return view('admin.perangkat_daerah.edit', compact('perangkat_daerah', 'perangkat_daerahs'));
     }
 
@@ -87,7 +87,7 @@ class PerangkatDaerahController extends Controller
         );
 
         // Find the item and update it
-        $perangkat_daerah = Perangkat_Daerah::findOrFail($id);
+        $perangkat_daerah = PerangkatDaerah::findOrFail($id);
         $perangkat_daerah->update($validatedData);
 
         // Redirect to the perangkat daerah index with success message
@@ -100,7 +100,7 @@ class PerangkatDaerahController extends Controller
      */
     public function destroy(string $id)
     {
-        $perangkat_daerah = Perangkat_Daerah::findOrFail($id);
+        $perangkat_daerah = PerangkatDaerah::findOrFail($id);
         $perangkat_daerah->delete();
 
         return redirect()->route('perangkat_daerah.index')

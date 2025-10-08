@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Perangkat_Daerah;
+use App\Models\PerangkatDaerah;
 use App\Models\Role;
 
 class UserController extends Controller
@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        $perangkatDaerah = Perangkat_Daerah::all();
+        $perangkatDaerah = PerangkatDaerah::all();
         return view('admin.user.index', compact('users', 'perangkatDaerah'));
     }
 
@@ -24,7 +24,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $perangkatDaerah = Perangkat_Daerah::all();
+        $perangkatDaerah = PerangkatDaerah::all();
         $roles = Role::all();
         return view('admin.user.create', compact('perangkatDaerah', 'roles'));
     }
@@ -79,7 +79,7 @@ class UserController extends Controller
     public function edit(string $id)
     {
         $user = User::findOrFail($id);
-        $perangkatDaerah = Perangkat_Daerah::all();
+        $perangkatDaerah = PerangkatDaerah::all();
         $roles = Role::all();
         return view('admin.user.edit', compact('user', 'perangkatDaerah', 'roles'));
     }
