@@ -40,38 +40,36 @@ class AgendaController extends Controller
 
 
     // Menampilkan form create umum (tanpa preselected surat)
-    public function create()
+    public function create(Request $request)
     {
-        $user = Auth::user();
+        // Ambil semua data yang dibutuhkan
+        $surats = Surat::with('perangkatDaerah', 'jabatan')->get();
+        $perangkatDaerah = PerangkatDaerah::all();
+        $pakaian = Pakaian::all();
+        $misis = Misi::all();
 
-        if ($user->role->role_name === 'User') {
-            // 🔒 User hanya bisa memilih perangkat daerahnya sendiri
-            $perangkatDaerah = collect([$user->perangkatDaerah]);
-            $jabatans = \App\Models\Jabatan::where('id_perangkat_daerah', $user->id_perangkat_daerah)->get();
-        } else {
-            // 👨‍💼 Admin bisa melihat semua perangkat daerah
-            $perangkatDaerah = \App\Models\PerangkatDaerah::orderBy('singkatan')->get();
-            $jabatans = collect(); // Akan diisi via AJAX
+        // ✅ CEK JIKA ADA PARAMETER surat_id
+        $selectedSurat = null;
+        if ($request->has('surat_id')) {
+            $selectedSurat = Surat::find($request->surat_id);
         }
 
-        $surats = \App\Models\Surat::orderBy('created_at', 'desc')->get();
-        $pakaian = \App\Models\Pakaian::orderBy('pakaian')->get();
-        $misis = \App\Models\Misi::orderBy('misi')->get();
-        $programs = collect();
-        $selectedSurat = null;
+        // Filter jabatan berdasarkan role
+        if (Auth::user()->role->role_name === 'User') {
+            $jabatans = Jabatan::where('id_perangkat_daerah', Auth::user()->id_perangkat_daerah)->get();
+        } else {
+            $jabatans = Jabatan::all();
+        }
 
         return view('admin.agenda.create', compact(
+            'surats',
             'perangkatDaerah',
             'jabatans',
-            'user',
-            'surats',
             'pakaian',
             'misis',
-            'programs',
-            'selectedSurat'
+            'selectedSurat' // ✅ KIRIM DATA SURAT YANG DIPILIH
         ));
     }
-
 
 
     // Form create khusus saat dipanggil dari surat tertentu: /agenda/create/{surat}

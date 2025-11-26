@@ -31,10 +31,21 @@
           {{-- Asal Surat --}}
           <div class="form-group mb-3">
             <label for="id_surat">Asal Surat</label>
-            @if(Auth::user()->role->role_name === 'User' && isset($selectedSurat))
-              <input type="text" class="form-control" value="{{ $selectedSurat->nomor_surat }} - {{ $selectedSurat->asal_surat }}" readonly>
+            @if(request('surat_id') && isset($selectedSurat))
+              {{-- ✅ READONLY - Jika dari link "Buat Agenda" --}}
+              <input type="text" class="form-control"
+                     value="{{ $selectedSurat->nomor_surat }} - {{ $selectedSurat->asal_surat }}" readonly>
+              <input type="hidden" name="id_surat" value="{{ $selectedSurat->id }}">
+              <small class="text-muted">
+                <i class="bi bi-info-circle"></i> Surat otomatis dipilih dari halaman daftar surat.
+              </small>
+            @elseif(Auth::user()->role->role_name === 'User' && isset($selectedSurat))
+              {{-- User dengan surat yang dipilih dari index --}}
+              <input type="text" class="form-control"
+                     value="{{ $selectedSurat->nomor_surat }} - {{ $selectedSurat->asal_surat }}" readonly>
               <input type="hidden" name="id_surat" value="{{ $selectedSurat->id }}">
             @else
+              {{-- Dropdown normal - Hanya jika akses langsung /agenda/create --}}
               <select name="id_surat" id="id_surat" class="form-control" required>
                 <option value="">-- Pilih Surat --</option>
                 @foreach($surats as $s)
@@ -49,27 +60,34 @@
           {{-- Nama Agenda --}}
           <div class="form-group mb-3">
             <label for="agenda">Nama Agenda</label>
-            <input type="text" name="agenda" id="agenda" class="form-control" value="{{ old('agenda') }}" required>
+            <input type="text" name="agenda" id="agenda" class="form-control"
+                   value="{{ old('agenda') }}" required>
           </div>
 
           {{-- Tanggal --}}
           <div class="form-group mb-3">
             <label for="tanggal">Tanggal</label>
-            <input type="text" name="tanggal" id="tanggal" class="form-control flatpickr-no-config" value="{{ old('tanggal') }}" autocomplete="off" required>
+            <input type="text" name="tanggal" id="tanggal"
+                   class="form-control flatpickr-no-config"
+                   value="{{ old('tanggal') }}" autocomplete="off" required>
           </div>
 
           {{-- Waktu --}}
           <div class="form-group mb-3">
             <label for="waktu">Waktu</label>
-            <input type="text" name="waktu" id="waktu" class="form-control flatpickr-time-picker-24h" value="{{ old('waktu') }}" required>
+            <input type="text" name="waktu" id="waktu"
+                   class="form-control flatpickr-time-picker-24h"
+                   value="{{ old('waktu') }}" required>
           </div>
 
           {{-- Perangkat Daerah --}}
           <div class="form-group mb-3">
             <label for="id_perangkat_daerah">Perangkat Daerah</label>
             @if(Auth::user()->role->role_name === 'User')
-              <input type="text" class="form-control" value="{{ Auth::user()->perangkatDaerah->singkatan }}" readonly>
-              <input type="hidden" name="id_perangkat_daerah" id="id_perangkat_daerah" value="{{ Auth::user()->id_perangkat_daerah }}">
+              <input type="text" class="form-control"
+                     value="{{ Auth::user()->perangkatDaerah->singkatan }}" readonly>
+              <input type="hidden" name="id_perangkat_daerah" id="id_perangkat_daerah"
+                     value="{{ Auth::user()->id_perangkat_daerah }}">
             @else
               <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
                 <option value="">-- Pilih Perangkat Daerah --</option>
@@ -102,7 +120,8 @@
           {{-- Tempat --}}
           <div class="form-group mb-3">
             <label for="tempat">Tempat</label>
-            <input type="text" name="tempat" id="tempat" class="form-control" value="{{ old('tempat') }}" required>
+            <input type="text" name="tempat" id="tempat" class="form-control"
+                   value="{{ old('tempat') }}" required>
           </div>
 
           {{-- Pakaian --}}
@@ -160,7 +179,6 @@
 <script>
 $(document).ready(function() {
     console.log('🚀 Agenda Create Script Loaded');
-    console.log('jQuery Version:', $.fn.jquery);
 
     // ==========================================
     // FLATPICKR INITIALIZATION
@@ -183,10 +201,8 @@ $(document).ready(function() {
     // ==========================================
     function loadJabatan(perangkatId) {
         const $jabatanSelect = $('#id_jabatan');
-
         console.log('📍 Loading Jabatan for Perangkat Daerah ID:', perangkatId);
 
-        // Reset dropdown
         $jabatanSelect.html('<option value="">Memuat data jabatan...</option>').prop('disabled', true);
 
         if (!perangkatId) {
@@ -200,65 +216,44 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(data) {
                 console.log('✅ Jabatan Data Received:', data);
-                console.log('📊 Total Jabatan:', data.length);
-
                 $jabatanSelect.empty().prop('disabled', false);
                 $jabatanSelect.append('<option value="">-- Pilih Jabatan --</option>');
 
                 if (data.length > 0) {
                     $.each(data, function(index, jabatan) {
-                        $jabatanSelect.append(
-                            $('<option>', {
-                                value: jabatan.id,
-                                text: jabatan.jabatan
-                            })
-                        );
+                        $jabatanSelect.append($('<option>', {
+                            value: jabatan.id,
+                            text: jabatan.jabatan
+                        }));
                     });
-                    console.log('✅ Jabatan options populated');
                 } else {
                     $jabatanSelect.append('<option value="">Tidak ada jabatan tersedia</option>');
-                    console.warn('⚠️ No jabatan found for this perangkat daerah');
                 }
 
-                // Restore old value if exists
                 @if(old('id_jabatan'))
                     $jabatanSelect.val('{{ old("id_jabatan") }}');
-                    console.log('🔄 Restored old jabatan value:', '{{ old("id_jabatan") }}');
                 @endif
             },
             error: function(xhr, status, error) {
                 console.error('❌ Error loading jabatan:', error);
-                console.error('Response:', xhr.responseText);
                 $jabatanSelect.html('<option value="">Gagal memuat jabatan</option>').prop('disabled', false);
             }
         });
     }
 
-    // Event listener untuk perubahan Perangkat Daerah
     $('#id_perangkat_daerah').on('change', function() {
-        const perangkatId = $(this).val();
-        console.log('🔄 Perangkat Daerah changed to:', perangkatId);
-        loadJabatan(perangkatId);
+        loadJabatan($(this).val());
     });
 
-    // Auto-load untuk User role
     @if(Auth::user()->role->role_name === 'User')
-        console.log('👤 User Role Detected - Auto-loading jabatan');
         const userPerangkatId = $('#id_perangkat_daerah').val();
         if (userPerangkatId) {
-            console.log('Loading jabatan for user perangkat daerah:', userPerangkatId);
-            setTimeout(function() {
-                loadJabatan(userPerangkatId);
-            }, 300);
+            setTimeout(function() { loadJabatan(userPerangkatId); }, 300);
         }
     @endif
 
-    // Auto-load jika ada old value (validation error)
     @if(old('id_perangkat_daerah') && Auth::user()->role->role_name !== 'User')
-        console.log('🔄 Restoring old perangkat daerah value');
-        setTimeout(function() {
-            loadJabatan('{{ old("id_perangkat_daerah") }}');
-        }, 300);
+        setTimeout(function() { loadJabatan('{{ old("id_perangkat_daerah") }}'); }, 300);
     @endif
 
     // ==========================================
@@ -266,10 +261,8 @@ $(document).ready(function() {
     // ==========================================
     function loadProgram(misiId) {
         const $programSelect = $('#id_program');
-
         console.log('📍 Loading Program for Misi ID:', misiId);
 
-        // Reset dropdown
         $programSelect.html('<option value="">Memuat data program...</option>').prop('disabled', true);
 
         if (!misiId) {
@@ -283,53 +276,37 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(data) {
                 console.log('✅ Program Data Received:', data);
-                console.log('📊 Total Program:', data.length);
-
                 $programSelect.empty().prop('disabled', false);
                 $programSelect.append('<option value="">-- Pilih Program --</option>');
 
                 if (data.length > 0) {
                     $.each(data, function(index, program) {
-                        $programSelect.append(
-                            $('<option>', {
-                                value: program.id,
-                                text: program.description
-                            })
-                        );
+                        $programSelect.append($('<option>', {
+                            value: program.id,
+                            text: program.description
+                        }));
                     });
-                    console.log('✅ Program options populated');
                 } else {
                     $programSelect.append('<option value="">Tidak ada program tersedia</option>');
-                    console.warn('⚠️ No program found for this misi');
                 }
 
-                // Restore old value if exists
                 @if(old('id_program'))
                     $programSelect.val('{{ old("id_program") }}');
-                    console.log('🔄 Restored old program value:', '{{ old("id_program") }}');
                 @endif
             },
             error: function(xhr, status, error) {
                 console.error('❌ Error loading program:', error);
-                console.error('Response:', xhr.responseText);
                 $programSelect.html('<option value="">Gagal memuat program</option>').prop('disabled', false);
             }
         });
     }
 
-    // Event listener untuk perubahan Misi
     $('#id_misi').on('change', function() {
-        const misiId = $(this).val();
-        console.log('🔄 Misi changed to:', misiId);
-        loadProgram(misiId);
+        loadProgram($(this).val());
     });
 
-    // Auto-load jika ada old value (validation error)
     @if(old('id_misi'))
-        console.log('🔄 Restoring old misi value');
-        setTimeout(function() {
-            loadProgram('{{ old("id_misi") }}');
-        }, 300);
+        setTimeout(function() { loadProgram('{{ old("id_misi") }}'); }, 300);
     @endif
 
     console.log('✅ All event listeners registered');

@@ -1,12 +1,12 @@
-          @extends('admin.layout.master')
-          @section('tittle', 'Surat')
+@extends('admin.layout.master')
+@section('tittle', 'Surat')
 
-          @section('css')
+@section('css')
 <link rel="stylesheet" href="{{ asset('assets/admin/extensions/simple-datatables/style.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/admin/compiled/css/table-datatable.css') }}">
-            @endsection
+@endsection
 
-            @section('content')
+@section('content')
 <div class="page-heading">
     <div class="page-title">
         <div class="row">
@@ -30,8 +30,8 @@
                     <p><i class="bi bi-check-circle-fill"></i>{{ session('success') }}</p>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-
                 @endif
+
                 <table class="table table-striped" id="table1">
                     <thead>
                         <tr>
@@ -52,17 +52,21 @@
                             <td>{{ $item->tanggal_surat }}</td>
                             <td>{{ $item->perihal }}</td>
                             <td>
-                                <a href="{{ route('agenda.createBySurat', $item->id) }}" class="btn btn-sm btn-primary">
+                                {{-- ✅ LINK BUAT AGENDA DENGAN PARAMETER SURAT_ID --}}
+                                <a href="{{ route('agenda.create', ['surat_id' => $item->id]) }}"
+                                   class="btn btn-sm btn-primary">
                                     <i class="bi bi-calendar-plus"></i> Buat Agenda
                                 </a>
 
                                 <a href="{{ route('surat.edit', $item->id) }}" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </a>
+
                                 <form action="{{ route('surat.destroy', $item->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(' Apakah Anda yakin ingin menghapus surat ini?')">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Apakah Anda yakin ingin menghapus surat ini?')">
                                         <i class="bi bi-trash"></i> Hapus
                                     </button>
                                 </form>
@@ -73,7 +77,6 @@
                 </table>
             </div>
         </div>
-
     </section>
 </div>
 @endsection
