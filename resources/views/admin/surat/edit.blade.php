@@ -1,4 +1,4 @@
-@extends('admin.layout.master')
+@extends('admin.layout.master-navbar')
 @section('tittle', 'Edit Surat')
 
 @section('content')
@@ -32,22 +32,22 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="asal_surat">Pengirim Surat</label>
-                            <input type="text" class="form-control" id="asal_surat" name="asal_surat" 
+                            <input type="text" class="form-control" id="asal_surat" name="asal_surat"
                                    value="{{ old('asal_surat', $surat->asal_surat) }}" required>
                         </div>
 
                         <div class="form-group">
                             <label for="id_perangkat_daerah">Perangkat Daerah Tujuan Surat</label>
                             @if(Auth::user()->role->role_name === 'User')
-                                <input type="text" class="form-control" 
+                                <input type="text" class="form-control"
                                        value="{{ Auth::user()->perangkatDaerah->singkatan }}" readonly>
-                                <input type="hidden" name="id_perangkat_daerah" 
+                                <input type="hidden" name="id_perangkat_daerah"
                                        value="{{ Auth::user()->id_perangkat_daerah }}">
                             @else
                                 <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
                                     <option value="">-- Pilih Perangkat Daerah --</option>
                                     @foreach($perangkatDaerah as $pd)
-                                        <option value="{{ $pd->id }}" 
+                                        <option value="{{ $pd->id }}"
                                             {{ old('id_perangkat_daerah', $surat->id_perangkat_daerah) == $pd->id ? 'selected' : '' }}>
                                             {{ $pd->singkatan }}
                                         </option>
@@ -61,7 +61,7 @@
                             <select name="id_jabatan" id="id_jabatan" class="form-control" required>
                                 <option value="">-- Pilih Jabatan --</option>
                                 @foreach($jabatans as $jabatan)
-                                    <option value="{{ $jabatan->id }}" 
+                                    <option value="{{ $jabatan->id }}"
                                         {{ old('id_jabatan', $surat->id_jabatan) == $jabatan->id ? 'selected' : '' }}>
                                         {{ $jabatan->jabatan }}
                                     </option>
@@ -86,7 +86,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="tanggal_surat">Tanggal Surat</label>
-                            <input type="text" class="form-control mb-3 flatpickr-no-config" 
+                            <input type="text" class="form-control mb-3 flatpickr-no-config"
                                    name="tanggal_surat"
                                    value="{{ old('tanggal_surat', $surat->tanggal_surat) }}" readonly>
                         </div>

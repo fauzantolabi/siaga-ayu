@@ -1,4 +1,4 @@
-          @extends('admin.layout.master')
+          @extends('admin.layout.master-navbar')
           @section('tittle', 'Perangkat Daerah')
 
           @section('css')

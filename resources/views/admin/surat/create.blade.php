@@ -1,4 +1,4 @@
-@extends('admin.layout.master')
+@extends('admin.layout.master-navbar')
           @section('tittle', 'Tambah Surat')
 
           @section('content')
@@ -62,7 +62,7 @@
                             @error('nomor_surat')
                                 <div class="text-danger mt-1">{{ $message }}</div>
                             @enderror
-                        </div>                      
+                        </div>
 
                         <div class="form-group">
                             <label for="basicInput">Perihal</label>
@@ -76,7 +76,7 @@
                         </div>
                         <div class="form-group">
                              <label for="basicInput">Tanggal Terima</label>
-                             <input type="text" class="form-control mb-3 flatpickr-no-config flatpickr-input active" placeholder="Select date.." readonly="readonly" name="tanggal_terima"> 
+                             <input type="text" class="form-control mb-3 flatpickr-no-config flatpickr-input active" placeholder="Select date.." readonly="readonly" name="tanggal_terima">
                         </div>
 
                          <div class="form-group">
