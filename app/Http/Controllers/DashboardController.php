@@ -3,81 +3,188 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Agenda;
-use App\Models\PerangkatDaerah;
+use App\Models\{Agenda, Misi, Program, PerangkatDaerah};
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        // Set Carbon locale ke Bahasa Indonesia
+        Carbon::setLocale('id');
+
         $user = Auth::user();
-        $selectedDate = $request->input('tanggal')
-            ? Carbon::parse($request->tanggal)
+
+        // === FILTER DASAR ===
+        $selectedDate = $request->get('tanggal')
+            ? Carbon::parse($request->get('tanggal'))
             : Carbon::today();
-        $selectedPD = $request->input('id_perangkat_daerah');
 
-        // Query dasar Agenda
-        $agendaQuery = Agenda::with(['jabatan.perangkatDaerah', 'pakaian', 'surat']);
+        $selectedPD = $request->get('id_perangkat_daerah');
 
-        // 🔹 Filter sesuai role user
+        // === FILTER STATISTIK (Tahun & Bulan) ===
+        $tahun = $request->get('tahun', date('Y'));
+        $bulan = $request->get('bulan');
+
+        // === HITUNG AGENDA ===
+        $agendaQuery = Agenda::query();
+
+        // Filter berdasarkan role
         if ($user->role->role_name === 'User') {
+            // User hanya melihat agenda dari perangkat daerahnya
             $agendaQuery->whereHas('jabatan', function ($q) use ($user) {
                 $q->where('id_perangkat_daerah', $user->id_perangkat_daerah);
             });
         } elseif ($selectedPD) {
-            // Admin bisa filter perangkat daerah dari dropdown
-            $agendaQuery->whereHas('jabatan', function ($q) use ($selectedPD) {
-                $q->where('id_perangkat_daerah', $selectedPD);
-            });
+            // Admin dengan filter perangkat daerah
+            $agendaQuery->whereHas('jabatan', fn($q) => $q->where('id_perangkat_daerah', $selectedPD));
         }
 
-        // 🔹 Urutkan berdasarkan prioritas jabatan (semakin tinggi semakin dulu)
-        // Pastikan di tabel jabatan ada kolom 'tingkat' atau 'prioritas' (angka makin kecil makin tinggi)
-        $agendaQuery->join('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
-            ->select('agendas.*')
-            ->orderBy('jabatans.prioritas', 'asc') // urutkan jabatan tertinggi dulu
-            ->orderBy('agendas.tanggal', 'asc')
-            ->orderBy('agendas.waktu', 'asc');
-
-        // 📅 Ambil agenda untuk tanggal terpilih
-        $todayAgendas = (clone $agendaQuery)
-            ->whereDate('agendas.tanggal', $selectedDate)
-            ->get()
-            ->groupBy('id_jabatan');
-
-        // 📊 Statistik
         $agendaHariIni = (clone $agendaQuery)
-            ->whereDate('agendas.tanggal', Carbon::today())
+            ->whereDate('tanggal', Carbon::today())
             ->count();
 
         $agendaMingguIni = (clone $agendaQuery)
-            ->whereBetween('agendas.tanggal', [
-                Carbon::now()->startOfWeek(),
-                Carbon::now()->endOfWeek()
-            ])->count();
+            ->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+            ->count();
 
         $agendaBulanIni = (clone $agendaQuery)
-            ->whereMonth('agendas.tanggal', Carbon::now()->month)
+            ->whereMonth('tanggal', Carbon::now()->month)
+            ->whereYear('tanggal', Carbon::now()->year)
             ->count();
 
         $totalAgenda = (clone $agendaQuery)->count();
 
-        // 🔹 Ambil perangkat daerah (hanya untuk Admin)
-        $perangkatDaerahs = $user->role->role_name === 'Admin'
-            ? PerangkatDaerah::orderBy('singkatan')->get()
-            : collect();
+        // === AGENDA HARI INI (berdasarkan tanggal yang dipilih) ===
+        $todayAgendasQuery = (clone $agendaQuery)
+            ->with(['pakaian', 'jabatan.perangkatDaerah', 'surat', 'jabatan'])
+            ->whereDate('tanggal', $selectedDate)
+            ->join('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
+            ->orderBy('jabatans.prioritas', 'asc') // Urutkan berdasarkan prioritas jabatan
+            ->orderBy('agendas.waktu', 'asc')
+            ->select('agendas.*');
 
+        $todayAgendas = $todayAgendasQuery->get()->groupBy('id_jabatan');
+
+        // === PERANGKAT DAERAH (untuk filter Admin) ===
+        $perangkatDaerahs = PerangkatDaerah::orderBy('singkatan')->get();
+
+        // === STATISTIK: Misi Terpopuler ===
+        $misiStatsQuery = Misi::select('misis.id', 'misis.misi', DB::raw('COUNT(DISTINCT agendas.id) as total_agenda'))
+            ->leftJoin('programs', 'programs.id_misi', '=', 'misis.id')
+            ->leftJoin('agendas', 'agendas.id_program', '=', 'programs.id');
+
+        // Filter berdasarkan role untuk statistik
+        if ($user->role->role_name === 'User') {
+            $misiStatsQuery->leftJoin('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
+                ->where(function ($q) use ($user) {
+                    $q->where('jabatans.id_perangkat_daerah', $user->id_perangkat_daerah)
+                        ->orWhereNull('agendas.id'); // Include misi without agenda
+                });
+        }
+
+        // Filter berdasarkan tahun dan bulan
+        if ($tahun) {
+            $misiStatsQuery->where(function ($q) use ($tahun) {
+                $q->whereYear('agendas.tanggal', $tahun)
+                    ->orWhereNull('agendas.id');
+            });
+        }
+        if ($bulan) {
+            $misiStatsQuery->where(function ($q) use ($bulan) {
+                $q->whereMonth('agendas.tanggal', $bulan)
+                    ->orWhereNull('agendas.id');
+            });
+        }
+
+        $misiStats = $misiStatsQuery
+            ->groupBy('misis.id', 'misis.misi')
+            ->having('total_agenda', '>', 0) // Hanya tampilkan yang ada agendanya
+            ->orderByDesc('total_agenda')
+            ->take(10)
+            ->get();
+
+        // === STATISTIK: Program Terpopuler ===
+        $programStatsQuery = Program::select('programs.id', 'programs.description', DB::raw('COUNT(DISTINCT agendas.id) as total_agenda'))
+            ->leftJoin('agendas', 'agendas.id_program', '=', 'programs.id');
+
+        // Filter berdasarkan role untuk statistik
+        if ($user->role->role_name === 'User') {
+            $programStatsQuery->leftJoin('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
+                ->where(function ($q) use ($user) {
+                    $q->where('jabatans.id_perangkat_daerah', $user->id_perangkat_daerah)
+                        ->orWhereNull('agendas.id'); // Include program without agenda
+                });
+        }
+
+        // Filter berdasarkan tahun dan bulan
+        if ($tahun) {
+            $programStatsQuery->where(function ($q) use ($tahun) {
+                $q->whereYear('agendas.tanggal', $tahun)
+                    ->orWhereNull('agendas.id');
+            });
+        }
+        if ($bulan) {
+            $programStatsQuery->where(function ($q) use ($bulan) {
+                $q->whereMonth('agendas.tanggal', $bulan)
+                    ->orWhereNull('agendas.id');
+            });
+        }
+
+        $programStats = $programStatsQuery
+            ->groupBy('programs.id', 'programs.description')
+            ->having('total_agenda', '>', 0) // Hanya tampilkan yang ada agendanya
+            ->orderByDesc('total_agenda')
+            ->take(10)
+            ->get();
+
+        // === TREN AGENDA PER BULAN ===
+        $agendaTrendQuery = Agenda::select(
+            DB::raw('MONTH(tanggal) as bulan'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereYear('tanggal', $tahun);
+
+        // Filter berdasarkan role untuk trend
+        if ($user->role->role_name === 'User') {
+            $agendaTrendQuery->whereHas('jabatan', function ($q) use ($user) {
+                $q->where('id_perangkat_daerah', $user->id_perangkat_daerah);
+            });
+        }
+
+        $agendaTrendQuery = $agendaTrendQuery
+            ->groupBy(DB::raw('MONTH(tanggal)'))
+            ->orderBy(DB::raw('MONTH(tanggal)'));
+
+        $agendaTrendData = $agendaTrendQuery->pluck('total', 'bulan');
+
+        // Buat label bulan dalam Bahasa Indonesia
+        $bulanLabels = collect(range(1, 12))
+            ->map(fn($m) => Carbon::create()->month($m)->translatedFormat('F'));
+
+        // Map data ke 12 bulan (isi 0 jika tidak ada data)
+        $agendaTrendData = collect(range(1, 12))
+            ->map(fn($m) => $agendaTrendData[$m] ?? 0)
+            ->values();
+
+        // === RETURN KE VIEW ===
         return view('admin.dashboard', compact(
             'selectedDate',
             'selectedPD',
-            'todayAgendas',
             'agendaHariIni',
             'agendaMingguIni',
             'agendaBulanIni',
             'totalAgenda',
-            'perangkatDaerahs'
+            'todayAgendas',
+            'perangkatDaerahs',
+            'misiStats',
+            'programStats',
+            'agendaTrendData',
+            'bulanLabels',
+            'tahun',
+            'bulan'
         ));
     }
 }

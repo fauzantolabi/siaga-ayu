@@ -27,31 +27,29 @@
         <form class="form" action="{{ route('agenda.update', $agenda->id) }}" enctype="multipart/form-data" method="POST">
             @csrf
             @method('PUT')
+
             <div class="form-body">
                 <div class="row">
                     {{-- Kolom kiri --}}
                     <div class="col-md-6">
                         {{-- Surat --}}
                         <div class="form-group mb-3">
-        <label for="id_surat">Asal Surat</label>
-
-        @if(Auth::user()->role->role_name === 'User')
-            {{-- 🔒 User tidak bisa ubah surat --}}
-            <input type="text" class="form-control" value="{{$selectedSurat->nomor_surat}} - {{ $selectedSurat->asal_surat }}" readonly>
-            <input type="hidden" name="id_surat" value="{{ $selectedSurat->id }}">
-        @else
-            {{-- 👨‍💼 Admin bisa pilih surat --}}
-            <select name="id_surat" id="id_surat" class="form-control" required>
-                <option value="">-- Pilih Surat --</option>
-                @foreach($surats as $s)
-                    <option value="{{ $s->id }}"
-                        {{ (isset($selectedSurat) && $selectedSurat && $selectedSurat->id == $s->id) ? 'selected' : '' }}>
-                        {{ $s->nomor_surat }} - {{ $s->asal_surat }}
-                    </option>
-                @endforeach
-            </select>
-        @endif
-    </div>
+                            <label for="id_surat">Asal Surat</label>
+                            @if(Auth::user()->role->role_name === 'User')
+                                <input type="text" class="form-control"
+                                    value="{{ $agenda->surat ? $agenda->surat->nomor_surat . ' - ' . $agenda->surat->asal_surat : '-' }}" readonly>
+                                <input type="hidden" name="id_surat" value="{{ $agenda->id_surat }}">
+                            @else
+                                <select name="id_surat" id="id_surat" class="form-control" required>
+                                    <option value="">-- Pilih Surat --</option>
+                                    @foreach($surats as $s)
+                                        <option value="{{ $s->id }}" {{ $agenda->id_surat == $s->id ? 'selected' : '' }}>
+                                            {{ $s->nomor_surat }} - {{ $s->asal_surat }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
 
                         {{-- Nama Agenda --}}
                         <div class="form-group">
@@ -73,44 +71,61 @@
                             <input type="text" class="form-control flatpickr-time-picker-24h" id="waktu" name="waktu"
                                 value="{{ old('waktu', $agenda->waktu) }}" required autocomplete="off">
                         </div>
-                    </div>
 
-                    {{-- Kolom kanan --}}
-                    <div class="col-md-6">
                         {{-- Tempat --}}
                         <div class="form-group">
                             <label for="tempat">Tempat</label>
                             <input type="text" class="form-control" id="tempat" name="tempat"
                                 value="{{ old('tempat', $agenda->tempat) }}" required>
                         </div>
+                    </div>
+
+                    {{-- Kolom kanan --}}
+                    <div class="col-md-6">
+                        {{-- Misi --}}
+                        <div class="form-group">
+                            <label for="id_misi">Misi</label>
+                            <select name="id_misi" id="id_misi" class="form-control" required>
+                                <option value="">-- Pilih Misi --</option>
+                                @foreach($misis as $misi)
+                                    <option value="{{ $misi->id }}" {{ $agenda->id_misi == $misi->id ? 'selected' : '' }}>
+                                        {{ $misi->misi }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Program --}}
+                        <div class="form-group">
+                            <label for="id_program">Program</label>
+                            <select name="id_program" id="id_program" class="form-control" required>
+                                <option value="">-- Pilih Program --</option>
+                                @foreach($programs as $program)
+                                    <option value="{{ $program->id }}" {{ $agenda->id_program == $program->id ? 'selected' : '' }}>
+                                        {{ $program->description }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
                         {{-- Jabatan --}}
-                       {{-- Jabatan --}}
-<div class="form-group">
-    <label for="id_jabatan">Jabatan</label>
-    <select name="id_jabatan" id="id_jabatan" class="form-select">
-        <option value="">-- Pilih Jabatan --</option>
+                        <div class="form-group">
+                            <label for="id_jabatan">Jabatan</label>
+                            <select name="id_jabatan" id="id_jabatan" class="form-select" required>
+                                <option value="">-- Pilih Jabatan --</option>
+                                @foreach($jabatans as $j)
+                                    <option value="{{ $j->id }}" {{ $agenda->id_jabatan == $j->id ? 'selected' : '' }}>
+                                        {{ $j->jabatan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-        @if(isset($jabatans) && $jabatans->count())
-            @foreach($jabatans as $j)
-                <option value="{{ $j->id }}" {{ $agenda->id_jabatan == $j->id ? 'selected' : '' }}>
-                    {{ $j->jabatan }}
-                </option>
-            @endforeach
-        @else
-            {{-- fallback: tampilkan semua jika tidak ada filter (opsional) --}}
-            @foreach(\App\Models\Jabatan::all() as $j)
-                <option value="{{ $j->id }}" {{ $agenda->id_jabatan == $j->id ? 'selected' : '' }}>
-                    {{ $j->jabatan }}
-                </option>
-            @endforeach
-        @endif
-    </select>
-</div>
                         {{-- Pakaian --}}
                         <div class="form-group">
                             <label for="id_pakaian">Pakaian</label>
                             <select name="id_pakaian" id="id_pakaian" class="form-select">
+                                <option value="">-- Pilih Pakaian --</option>
                                 @foreach($pakaian as $p)
                                     <option value="{{ $p->id }}" {{ $agenda->id_pakaian == $p->id ? 'selected' : '' }}>
                                         {{ $p->pakaian }}
@@ -132,11 +147,12 @@
                 {{-- Foto Lama --}}
                 <div class="mb-3">
                     <label class="form-label fw-bold">Foto Saat Ini</label>
-                    @if(optional($agenda->photos)->count())
+                    @if($agenda->photos && $agenda->photos->count())
                         <div class="row">
                             @foreach($agenda->photos as $photo)
                                 <div class="col-md-3 col-6 text-center mb-3">
-                                    <img src="{{ asset('storage/' . $photo->path) }}" alt="Foto Agenda" class="img-fluid rounded shadow-sm mb-2" style="max-height:120px; object-fit:cover;">
+                                    <img src="{{ asset('storage/' . $photo->path) }}" alt="Foto Agenda"
+                                        class="img-fluid rounded shadow-sm mb-2" style="max-height:120px; object-fit:cover;">
                                     <div class="form-check">
                                         <input type="checkbox" name="hapus_foto[]" value="{{ $photo->id }}" class="form-check-input" id="hapus_{{ $photo->id }}">
                                         <label for="hapus_{{ $photo->id }}" class="form-check-label small text-danger">Hapus foto ini</label>
@@ -153,13 +169,13 @@
                 <div class="form-group">
                     <label for="fotos">Tambah Foto Baru</label>
                     <input type="file" name="fotos[]" id="fotos" class="form-control" multiple>
-                    <small class="text-muted">Bisa pilih lebih dari satu file. Format: JPG, JPEG, PNG (maks. 2MB)</small>
+                    <small class="text-muted">Bisa pilih lebih dari satu file (JPG, JPEG, PNG, maks. 2MB)</small>
                 </div>
 
                 {{-- Tombol --}}
                 <div class="form-group d-flex justify-content-end mt-4">
                     <a href="{{ route('agenda.index') }}" class="btn btn-danger me-2">Batal</a>
-                     <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
+                    <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
                     <button type="submit" class="btn btn-primary">Update</button>
                 </div>
             </div>
@@ -178,5 +194,42 @@
         dateFormat: "H:i",
         time_24hr: true
     });
+</script>
+
+@endsection
+
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('#id_misi').on('change', function () {
+        const misiId = $(this).val();
+        const $programSelect = $('#id_program');
+
+        $programSelect.html('<option value="">Memuat...</option>');
+
+        if (!misiId) {
+            $programSelect.html('<option value="">-- Pilih Program --</option>');
+            return;
+        }
+
+        $.ajax({
+            url: '/get-programs/' + misiId,
+            type: 'GET',
+            success: function (data) {
+                $programSelect.empty();
+                $programSelect.append('<option value="">-- Pilih Program --</option>');
+                $.each(data, function (i, program) {
+                    $programSelect.append(
+                        `<option value="${program.id}">${program.description}</option>`
+                    );
+                });
+            },
+            error: function () {
+                $programSelect.html('<option value="">Gagal memuat program</option>');
+            }
+        });
+    });
+});
 </script>
 @endsection

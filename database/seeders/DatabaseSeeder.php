@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             $this->call(PakaianSeeder::class);
             $this->call(SuratSeeder::class);
             $this->call(AgendaSeeder::class);
+            $this->call([MisiProgramSeeder::class,]);
         });
     }
 }

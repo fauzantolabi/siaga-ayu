@@ -8,6 +8,10 @@ use App\Models\Jabatan;
 use App\Models\Pakaian;
 use App\Models\Surat;
 use App\Models\PerangkatDaerah;
+use App\Models\Misi;
+use App\Models\Program;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AgendaController extends Controller
 {
@@ -24,7 +28,6 @@ class AgendaController extends Controller
                 ->get();
         } else {
             // Admin melihat semua agenda
-            // $agendas = \App\Models\Agenda::with(['jabatan', 'perangkatDaerah'])->get();
             $agendas = Agenda::with(['jabatan', 'pakaian', 'surat'])
                 ->join('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
                 ->orderBy('jabatans.prioritas', 'asc') // semakin kecil = jabatan lebih tinggi
@@ -39,50 +42,114 @@ class AgendaController extends Controller
     // Menampilkan form create umum (tanpa preselected surat)
     public function create()
     {
-        $user = auth()->user();
+        $user = Auth::user();
+
         if ($user->role->role_name === 'User') {
-            // user biasa hanya bisa pilih perangkat daerahnya sendiri
+            // 🔒 User hanya bisa memilih perangkat daerahnya sendiri
             $perangkatDaerah = collect([$user->perangkatDaerah]);
             $jabatans = \App\Models\Jabatan::where('id_perangkat_daerah', $user->id_perangkat_daerah)->get();
         } else {
-            // admin bisa lihat semua
-            $perangkatDaerah = \App\Models\PerangkatDaerah::all();
-            $jabatans = collect(); // akan diisi lewat AJAX
-        }
-        $surats = Surat::all();
-        $pakaian = Pakaian::all();
-        $selectedSurat = null; // tidak ada yang dipilih
-
-        return view('admin.agenda.create', compact('surats', 'pakaian', 'jabatans', 'selectedSurat'));
-    }
-
-    // Menampilkan form create ketika dipanggil dari surat tertentu
-    // (route model binding; route harus punya param {surat})
-    public function createBySurat(Surat $surat)
-    {
-        $user = auth()->user();
-
-        if ($user->role->role_name === 'User') {
-            // User biasa hanya bisa pilih perangkat daerahnya sendiri
-            $perangkatDaerah = collect([$user->perangkatDaerah]);
-            $jabatans = \App\Models\Jabatan::where('id_perangkat_daerah', $user->id_perangkat_daerah)->get();
-        } else {
-            // Admin bisa lihat semua
-            $perangkatDaerah = \App\Models\PerangkatDaerah::all();
-            $jabatans = collect(); // akan diisi lewat AJAX
+            // 👨‍💼 Admin bisa melihat semua perangkat daerah
+            $perangkatDaerah = \App\Models\PerangkatDaerah::orderBy('singkatan')->get();
+            $jabatans = collect(); // Akan diisi via AJAX
         }
 
-        $surats = \App\Models\Surat::all();
-        $pakaian = \App\Models\Pakaian::all();
-        $selectedSurat = $surat; // surat yang dipilih
+        $surats = \App\Models\Surat::orderBy('created_at', 'desc')->get();
+        $pakaian = \App\Models\Pakaian::orderBy('pakaian')->get();
+        $misis = \App\Models\Misi::orderBy('misi')->get();
+        $programs = collect();
+        $selectedSurat = null;
 
         return view('admin.agenda.create', compact(
+            'perangkatDaerah',
+            'jabatans',
+            'user',
             'surats',
             'pakaian',
-            'jabatans',
-            'selectedSurat',
-            'perangkatDaerah' // 🔥 tambahkan ini
+            'misis',
+            'programs',
+            'selectedSurat'
         ));
+    }
+
+
+
+    // Form create khusus saat dipanggil dari surat tertentu: /agenda/create/{surat}
+    // Menggunakan route model binding (Surat $surat)
+    public function createBySurat(Surat $surat)
+    {
+        $user = Auth::user();
+
+        $perangkatDaerah = ($user->role->role_name === 'User')
+            ? collect([$user->perangkatDaerah])
+            : PerangkatDaerah::orderBy('singkatan')->get();
+
+        $jabatans = ($user->role->role_name === 'User')
+            ? Jabatan::where('id_perangkat_daerah', $user->id_perangkat_daerah)->get()
+            : Jabatan::orderBy('jabatan')->get();
+
+        $surats = Surat::orderBy('created_at', 'desc')->get();
+        $pakaian = Pakaian::orderBy('pakaian')->get();
+
+        $misis = Misi::orderBy('misi')->get();
+        $programs = collect();
+
+        $selectedSurat = $surat;
+
+        return view('admin.agenda.create', compact(
+            'perangkatDaerah',
+            'jabatans',
+            'surats',
+            'pakaian',
+            'misis',
+            'programs',
+            'selectedSurat'
+        ));
+    }
+
+    // 🔹 AJAX: Ambil Jabatan berdasarkan Perangkat Daerah
+    public function getJabatan($id_perangkat_daerah)
+    {
+        try {
+            // Log untuk debugging
+            Log::info('Getting jabatan for perangkat_daerah_id: ' . $id_perangkat_daerah);
+
+            // Query jabatan berdasarkan id_perangkat_daerah
+            $jabatans = Jabatan::where('id_perangkat_daerah', $id_perangkat_daerah)
+                ->select('id', 'jabatan')
+                ->orderBy('jabatan', 'asc')
+                ->get();
+
+            // Log hasil query
+            Log::info('Jabatan found: ' . $jabatans->count());
+
+            return response()->json($jabatans);
+
+        } catch (\Exception $e) {
+            Log::error('Error in getJabatan: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // 🔹 AJAX: Ambil Program berdasarkan Misi
+    public function getProgramsByMisi($id_misi)
+    {
+        try {
+            Log::info('Getting programs for misi_id: ' . $id_misi);
+
+            $programs = Program::where('id_misi', $id_misi)
+                ->select('id', 'description')
+                ->orderBy('description', 'asc')
+                ->get();
+
+            Log::info('Programs found: ' . $programs->count());
+
+            return response()->json($programs);
+
+        } catch (\Exception $e) {
+            Log::error('Error in getProgramsByMisi: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
 
@@ -101,6 +168,8 @@ class AgendaController extends Controller
             'id_pakaian' => 'nullable|exists:pakaians,id',
             'id_jabatan' => 'nullable|exists:jabatans,id',
             'id_user' => 'nullable|exists:users,id',
+            'id_misi' => 'nullable|exists:misis,id',
+            'id_program' => 'nullable|exists:programs,id',
         ]);
 
         // Ambil surat terkait
@@ -121,14 +190,7 @@ class AgendaController extends Controller
             }
         }
 
-        // if ($request->hasFile('fotos')) {
-        //     foreach ($request->file('fotos') as $file) {
-        //         $path = $file->store('agenda_foto', 'public');
-        //         $agenda->photos()->create(['path' => $path]);
-        //     }
-        // }
         Agenda::create($validatedData);
-
 
         return redirect()->route('agenda.index')->with('success', ' Agenda berhasil dibuat!');
     }
@@ -159,6 +221,8 @@ class AgendaController extends Controller
         $pakaian = Pakaian::all();
         $surats = Surat::all();
         $perangkatDaerahs = PerangkatDaerah::all();
+        $misis = \App\Models\Misi::orderBy('misi')->get();
+        $programs = \App\Models\Program::where('id_misi', $agenda->id_misi)->get();
 
         // Ambil jabatan sesuai role
         if ($user->role->role_name === 'User') {
@@ -178,7 +242,9 @@ class AgendaController extends Controller
             'jabatans',
             'surats',
             'perangkatDaerahs',
-            'selectedSurat'
+            'selectedSurat',
+            'misis',
+            'programs'
         ));
     }
 

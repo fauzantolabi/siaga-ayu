@@ -171,8 +171,15 @@ class JabatanController extends Controller
      */
     public function getByPerangkatDaerah($id)
     {
-        $jabatans = Jabatan::where('id_perangkat_daerah', $id)->get(['id', 'jabatan']);
+        $jabatans = \App\Models\Jabatan::where('id_perangkat_daerah', $id)
+            ->select('id', 'jabatan')
+            ->orderBy('jabatan')
+            ->get();
+
         return response()->json($jabatans);
     }
+
+
+
 }
 

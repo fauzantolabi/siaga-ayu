@@ -3,12 +3,12 @@
 
 @section('content')
 <div class="page-title">
-    <div class="row">
-        <div class="col-12 col-md-6 order-md-1 order-last">
-            <h3>Tambah Data Agenda</h3>
-            <p class="text-subtitle text-muted">Silahkan isi data agenda yang ingin ditambahkan</p>
-        </div>
+  <div class="row">
+    <div class="col-12 col-md-6 order-md-1 order-last">
+      <h3>Tambah Data Agenda</h3>
+      <p class="text-subtitle text-muted">Silahkan isi data agenda yang ingin ditambahkan</p>
     </div>
+  </div>
 </div>
 
 <div class="card">
@@ -25,32 +25,27 @@
 
     <form action="{{ route('agenda.store') }}" method="POST" enctype="multipart/form-data">
       @csrf
-
       <div class="row">
         <div class="col-md-6">
 
-  <div class="form-group mb-3">
-        <label for="id_surat">Asal Surat</label>
-
-        @if(Auth::user()->role->role_name === 'User')
-            {{-- 🔒 User tidak bisa ubah surat --}}
-            <input type="text" class="form-control" value="{{$selectedSurat->nomor_surat}} - {{ $selectedSurat->asal_surat }}" readonly>
-            <input type="hidden" name="id_surat" value="{{ $selectedSurat->id }}">
-        @else
-            {{-- 👨‍💼 Admin bisa pilih surat --}}
-            <select name="id_surat" id="id_surat" class="form-control" required>
+          {{-- Asal Surat --}}
+          <div class="form-group mb-3">
+            <label for="id_surat">Asal Surat</label>
+            @if(Auth::user()->role->role_name === 'User' && isset($selectedSurat))
+              <input type="text" class="form-control" value="{{ $selectedSurat->nomor_surat }} - {{ $selectedSurat->asal_surat }}" readonly>
+              <input type="hidden" name="id_surat" value="{{ $selectedSurat->id }}">
+            @else
+              <select name="id_surat" id="id_surat" class="form-control" required>
                 <option value="">-- Pilih Surat --</option>
                 @foreach($surats as $s)
-                    <option value="{{ $s->id }}"
-                        {{ (isset($selectedSurat) && $selectedSurat && $selectedSurat->id == $s->id) ? 'selected' : '' }}>
-                        {{ $s->nomor_surat }} - {{ $s->asal_surat }}
-                    </option>
+                  <option value="{{ $s->id }}" {{ old('id_surat') == $s->id ? 'selected' : '' }}>
+                    {{ $s->nomor_surat }} - {{ $s->asal_surat }}
+                  </option>
                 @endforeach
-            </select>
-        @endif
-    </div>
+              </select>
+            @endif
+          </div>
 
-          
           {{-- Nama Agenda --}}
           <div class="form-group mb-3">
             <label for="agenda">Nama Agenda</label>
@@ -69,35 +64,40 @@
             <input type="text" name="waktu" id="waktu" class="form-control flatpickr-time-picker-24h" value="{{ old('waktu') }}" required>
           </div>
 
+          {{-- Perangkat Daerah --}}
+          <div class="form-group mb-3">
+            <label for="id_perangkat_daerah">Perangkat Daerah</label>
+            @if(Auth::user()->role->role_name === 'User')
+              <input type="text" class="form-control" value="{{ Auth::user()->perangkatDaerah->singkatan }}" readonly>
+              <input type="hidden" name="id_perangkat_daerah" id="id_perangkat_daerah" value="{{ Auth::user()->id_perangkat_daerah }}">
+            @else
+              <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
+                <option value="">-- Pilih Perangkat Daerah --</option>
+                @foreach($perangkatDaerah as $pd)
+                  <option value="{{ $pd->id }}" {{ old('id_perangkat_daerah') == $pd->id ? 'selected' : '' }}>
+                    {{ $pd->singkatan }}
+                  </option>
+                @endforeach
+              </select>
+            @endif
+          </div>
+
+          {{-- Jabatan --}}
+          <div class="form-group mb-3">
+            <label for="id_jabatan">Jabatan</label>
+            <select name="id_jabatan" id="id_jabatan" class="form-control" required>
+              <option value="">-- Pilih Jabatan --</option>
+              @foreach($jabatans as $jabatan)
+                <option value="{{ $jabatan->id }}" {{ old('id_jabatan') == $jabatan->id ? 'selected' : '' }}>
+                  {{ $jabatan->jabatan }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+
         </div>
 
         <div class="col-md-6">
-          {{-- Perangkat Daerah & Jabatan --}}
-         <div class="form-group mt-3">
-            <label for="id_perangkat_daerah">Perangkat Daerah</label>
-            @if(Auth::user()->role->role_name === 'User')
-                {{-- 🔒 User tidak bisa ubah perangkat daerah --}}
-                <input type="text" class="form-control" value="{{ Auth::user()->perangkatDaerah->singkatan }}" readonly>
-                <input type="hidden" name="id_perangkat_daerah" value="{{ Auth::user()->id_perangkat_daerah }}">
-            @else
-                {{-- 👨‍💼 Admin bisa pilih --}}
-                <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
-                    <option value="">-- Pilih Perangkat Daerah --</option>
-                    @foreach($perangkatDaerah as $pd)
-                        <option value="{{ $pd->id }}">{{ $pd->singkatan }}</option>
-                    @endforeach
-                </select>
-            @endif
-        </div>
-        <div class="form-group mt-3">
-            <label for="id_jabatan">Jabatan Disposisi Agenda</label>
-            <select name="id_jabatan" id="id_jabatan" class="form-control" required>
-                <option value="">-- Pilih Jabatan --</option>
-                @foreach($jabatans as $jabatan)
-                    <option value="{{ $jabatan->id }}">{{ $jabatan->jabatan }}</option>
-                @endforeach
-            </select>
-        </div>
 
           {{-- Tempat --}}
           <div class="form-group mb-3">
@@ -109,12 +109,36 @@
           <div class="form-group mb-3">
             <label for="id_pakaian">Pakaian</label>
             <select name="id_pakaian" id="id_pakaian" class="form-control">
-              <option value="">-- Pilih Pakaian (opsional) --</option>
+              <option value="">-- Pilih Pakaian --</option>
               @foreach($pakaian as $p)
-                <option value="{{ $p->id }}" {{ old('id_pakaian') == $p->id ? 'selected' : '' }}>{{ $p->pakaian }}</option>
+                <option value="{{ $p->id }}" {{ old('id_pakaian') == $p->id ? 'selected' : '' }}>
+                  {{ $p->pakaian }}
+                </option>
               @endforeach
             </select>
           </div>
+
+          {{-- Misi --}}
+          <div class="form-group mb-3">
+            <label for="id_misi">Misi</label>
+            <select name="id_misi" id="id_misi" class="form-control" required>
+              <option value="">-- Pilih Misi --</option>
+              @foreach($misis as $misi)
+                <option value="{{ $misi->id }}" {{ old('id_misi') == $misi->id ? 'selected' : '' }}>
+                  {{ $misi->misi }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+
+          {{-- Program --}}
+          <div class="form-group mb-3">
+            <label for="id_program">Program</label>
+            <select name="id_program" id="id_program" class="form-control" required>
+              <option value="">-- Pilih Program --</option>
+            </select>
+          </div>
+
         </div>
       </div>
 
@@ -126,47 +150,189 @@
     </form>
   </div>
 </div>
+@endsection
 
+@section('scripts')
+{{-- Flatpickr CSS & JS --}}
 <link rel="stylesheet" href="{{ asset('assets/admin/extensions/flatpickr/flatpickr.min.css') }}">
 <script src="{{ asset('assets/admin/extensions/flatpickr/flatpickr.min.js') }}"></script>
+
 <script>
-  flatpickr(".flatpickr-no-config", {});
-  flatpickr(".flatpickr-time-picker-24h", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true });
+$(document).ready(function() {
+    console.log('🚀 Agenda Create Script Loaded');
+    console.log('jQuery Version:', $.fn.jquery);
 
-  // AJAX: ketika admin pilih perangkat daerah, ambil jabatan
-  @if(Auth::user()->role->role_name === 'Admin')
-  document.addEventListener('DOMContentLoaded', function () {
-    const pdSelect = document.getElementById('id_perangkat_daerah');
-    const jabatanSelect = document.getElementById('id_jabatan');
+    // ==========================================
+    // FLATPICKR INITIALIZATION
+    // ==========================================
+    flatpickr(".flatpickr-no-config", {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d/m/Y"
+    });
 
-    if (pdSelect) {
-      pdSelect.addEventListener('change', function () {
-        const perangkatId = this.value;
-        jabatanSelect.innerHTML = '<option value="">-- Memuat Jabatan... --</option>';
+    flatpickr(".flatpickr-time-picker-24h", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true
+    });
+
+    // ==========================================
+    // DEPENDENT DROPDOWN: JABATAN
+    // ==========================================
+    function loadJabatan(perangkatId) {
+        const $jabatanSelect = $('#id_jabatan');
+
+        console.log('📍 Loading Jabatan for Perangkat Daerah ID:', perangkatId);
+
+        // Reset dropdown
+        $jabatanSelect.html('<option value="">Memuat data jabatan...</option>').prop('disabled', true);
 
         if (!perangkatId) {
-          jabatanSelect.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
-          return;
+            $jabatanSelect.html('<option value="">-- Pilih Jabatan --</option>').prop('disabled', false);
+            return;
         }
 
-        fetch(`/get-jabatan/${perangkatId}`)
-          .then(res => res.json())
-          .then(data => {
-            jabatanSelect.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
-            data.forEach(item => {
-              const op = document.createElement('option');
-              op.value = item.id;
-              op.textContent = item.jabatan;
-              jabatanSelect.appendChild(op);
-            });
-          })
-          .catch(err => {
-            console.error(err);
-            jabatanSelect.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
-          });
-      });
+        $.ajax({
+            url: "{{ url('/get-jabatan') }}/" + perangkatId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                console.log('✅ Jabatan Data Received:', data);
+                console.log('📊 Total Jabatan:', data.length);
+
+                $jabatanSelect.empty().prop('disabled', false);
+                $jabatanSelect.append('<option value="">-- Pilih Jabatan --</option>');
+
+                if (data.length > 0) {
+                    $.each(data, function(index, jabatan) {
+                        $jabatanSelect.append(
+                            $('<option>', {
+                                value: jabatan.id,
+                                text: jabatan.jabatan
+                            })
+                        );
+                    });
+                    console.log('✅ Jabatan options populated');
+                } else {
+                    $jabatanSelect.append('<option value="">Tidak ada jabatan tersedia</option>');
+                    console.warn('⚠️ No jabatan found for this perangkat daerah');
+                }
+
+                // Restore old value if exists
+                @if(old('id_jabatan'))
+                    $jabatanSelect.val('{{ old("id_jabatan") }}');
+                    console.log('🔄 Restored old jabatan value:', '{{ old("id_jabatan") }}');
+                @endif
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Error loading jabatan:', error);
+                console.error('Response:', xhr.responseText);
+                $jabatanSelect.html('<option value="">Gagal memuat jabatan</option>').prop('disabled', false);
+            }
+        });
     }
-  });
-  @endif
+
+    // Event listener untuk perubahan Perangkat Daerah
+    $('#id_perangkat_daerah').on('change', function() {
+        const perangkatId = $(this).val();
+        console.log('🔄 Perangkat Daerah changed to:', perangkatId);
+        loadJabatan(perangkatId);
+    });
+
+    // Auto-load untuk User role
+    @if(Auth::user()->role->role_name === 'User')
+        console.log('👤 User Role Detected - Auto-loading jabatan');
+        const userPerangkatId = $('#id_perangkat_daerah').val();
+        if (userPerangkatId) {
+            console.log('Loading jabatan for user perangkat daerah:', userPerangkatId);
+            setTimeout(function() {
+                loadJabatan(userPerangkatId);
+            }, 300);
+        }
+    @endif
+
+    // Auto-load jika ada old value (validation error)
+    @if(old('id_perangkat_daerah') && Auth::user()->role->role_name !== 'User')
+        console.log('🔄 Restoring old perangkat daerah value');
+        setTimeout(function() {
+            loadJabatan('{{ old("id_perangkat_daerah") }}');
+        }, 300);
+    @endif
+
+    // ==========================================
+    // DEPENDENT DROPDOWN: PROGRAM
+    // ==========================================
+    function loadProgram(misiId) {
+        const $programSelect = $('#id_program');
+
+        console.log('📍 Loading Program for Misi ID:', misiId);
+
+        // Reset dropdown
+        $programSelect.html('<option value="">Memuat data program...</option>').prop('disabled', true);
+
+        if (!misiId) {
+            $programSelect.html('<option value="">-- Pilih Program --</option>').prop('disabled', false);
+            return;
+        }
+
+        $.ajax({
+            url: "{{ url('/get-programs') }}/" + misiId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                console.log('✅ Program Data Received:', data);
+                console.log('📊 Total Program:', data.length);
+
+                $programSelect.empty().prop('disabled', false);
+                $programSelect.append('<option value="">-- Pilih Program --</option>');
+
+                if (data.length > 0) {
+                    $.each(data, function(index, program) {
+                        $programSelect.append(
+                            $('<option>', {
+                                value: program.id,
+                                text: program.description
+                            })
+                        );
+                    });
+                    console.log('✅ Program options populated');
+                } else {
+                    $programSelect.append('<option value="">Tidak ada program tersedia</option>');
+                    console.warn('⚠️ No program found for this misi');
+                }
+
+                // Restore old value if exists
+                @if(old('id_program'))
+                    $programSelect.val('{{ old("id_program") }}');
+                    console.log('🔄 Restored old program value:', '{{ old("id_program") }}');
+                @endif
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Error loading program:', error);
+                console.error('Response:', xhr.responseText);
+                $programSelect.html('<option value="">Gagal memuat program</option>').prop('disabled', false);
+            }
+        });
+    }
+
+    // Event listener untuk perubahan Misi
+    $('#id_misi').on('change', function() {
+        const misiId = $(this).val();
+        console.log('🔄 Misi changed to:', misiId);
+        loadProgram(misiId);
+    });
+
+    // Auto-load jika ada old value (validation error)
+    @if(old('id_misi'))
+        console.log('🔄 Restoring old misi value');
+        setTimeout(function() {
+            loadProgram('{{ old("id_misi") }}');
+        }, 300);
+    @endif
+
+    console.log('✅ All event listeners registered');
+});
 </script>
 @endsection

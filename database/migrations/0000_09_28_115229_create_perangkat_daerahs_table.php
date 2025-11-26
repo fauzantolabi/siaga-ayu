@@ -12,8 +12,8 @@ return new class extends Migration {
     {
         Schema::create('perangkat_daerahs', function (Blueprint $table) {
             $table->id();
-            $table->string('perangkat_daerah')->fillable();
-            $table->string('singkatan')->fillable();
+            $table->string('perangkat_daerah');
+            $table->string('singkatan');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -24,6 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('perangkat__daerahs');
+        Schema::dropIfExists('perangkat_daerahs');
     }
 };
