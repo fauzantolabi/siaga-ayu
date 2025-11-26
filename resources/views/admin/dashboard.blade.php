@@ -15,7 +15,8 @@
 </div>
 
 <div class="page-content">
-    {{-- === NAV TAB === --}}
+    {{-- === NAV TAB - HANYA UNTUK ADMIN === --}}
+    @if($user->role->role_name === 'Admin')
     <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="agenda-tab" data-bs-toggle="tab" data-bs-target="#agendaTab"
@@ -30,11 +31,16 @@
             </button>
         </li>
     </ul>
+    @endif
 
     <div class="tab-content" id="dashboardTabsContent">
 
         {{-- ===================== 🗓️ TAB AGENDA ===================== --}}
+        @if($user->role->role_name === 'Admin')
         <div class="tab-pane fade show active" id="agendaTab" role="tabpanel" aria-labelledby="agenda-tab">
+        @else
+        <div>
+        @endif
             <section class="row">
                 <div class="col-12">
 
@@ -170,7 +176,8 @@
             </section>
         </div>
 
-        {{-- ===================== 📊 TAB STATISTIK ===================== --}}
+        {{-- ===================== 📊 TAB STATISTIK - HANYA UNTUK ADMIN ===================== --}}
+        @if($user->role->role_name === 'Admin')
         <div class="tab-pane fade" id="statistikTab" role="tabpanel" aria-labelledby="statistik-tab">
 
             {{-- Filter Statistik --}}
@@ -260,6 +267,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 </div>
 @endsection
@@ -269,8 +277,10 @@
 <link rel="stylesheet" href="{{ asset('assets/admin/extensions/flatpickr/flatpickr.min.css') }}">
 <script src="{{ asset('assets/admin/extensions/flatpickr/flatpickr.min.js') }}"></script>
 
-{{-- Chart.js --}}
+{{-- Chart.js - HANYA UNTUK ADMIN --}}
+@if($user->role->role_name === 'Admin')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@endif
 
 <script>
 $(document).ready(function() {
@@ -293,6 +303,7 @@ $(document).ready(function() {
         window.location.href = "{{ route('dashboard') }}";
     });
 
+    @if($user->role->role_name === 'Admin')
     $('#resetStatistik').on('click', function() {
         window.location.href = "{{ route('dashboard') }}?active_tab=statistik";
     });
@@ -370,14 +381,11 @@ $(document).ready(function() {
     // ==========================================
     // MISI CHART (Horizontal Bar)
     // ==========================================
-
-    // Function to truncate long labels
     function truncateLabel(label, maxLength = 50) {
         if (label.length <= maxLength) return label;
         return label.substring(0, maxLength) + '...';
     }
 
-    // Truncate labels for display
     const misiLabelsDisplay = misiLabels.map(label => truncateLabel(label));
 
     const misiChart = new Chart(document.getElementById('misiChart'), {
@@ -412,10 +420,6 @@ $(document).ready(function() {
                         autoSkip: false,
                         font: {
                             size: 11
-                        },
-                        // Callback untuk word wrap manual jika perlu
-                        callback: function(value, index) {
-                            return this.getLabelForValue(value);
                         }
                     }
                 }
@@ -426,7 +430,6 @@ $(document).ready(function() {
                     ...commonOptions.plugins.tooltip,
                     callbacks: {
                         title: function(context) {
-                            // Tampilkan label lengkap di tooltip
                             return misiLabels[context[0].dataIndex];
                         },
                         label: function(context) {
@@ -441,8 +444,6 @@ $(document).ready(function() {
     // ==========================================
     // PROGRAM CHART (Horizontal Bar)
     // ==========================================
-
-    // Truncate program labels
     const programLabelsDisplay = programLabels.map(label => truncateLabel(label));
 
     const programChart = new Chart(document.getElementById('programChart'), {
@@ -487,7 +488,6 @@ $(document).ready(function() {
                     ...commonOptions.plugins.tooltip,
                     callbacks: {
                         title: function(context) {
-                            // Tampilkan label lengkap di tooltip
                             return programLabels[context[0].dataIndex];
                         },
                         label: function(context) {
@@ -541,6 +541,7 @@ $(document).ready(function() {
     });
 
     console.log('✅ All charts initialized successfully');
+    @endif
 });
 </script>
 @endsection
