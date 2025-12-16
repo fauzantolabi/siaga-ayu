@@ -28,7 +28,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="basicInput">Pengirim Surat</label>
-                            <input type="text" class="form-control" id="asal_surat" placeholder="Enter nomor surat" name="asal_surat" required>
+                            <input type="text" class="form-control" id="asal_surat" placeholder="Pengirim surat" name="asal_surat" required>
                         </div>
                         <div class="form-group">
                             <label for="id_perangkat_daerah">Perangkat Daerah Tujuan Surat</label>

@@ -406,7 +406,7 @@
                     </div>
 
                     {{-- Remember Me --}}
-                    <div class="form-check">
+                    {{-- <div class="form-check">
                         <input class="form-check-input"
                                type="checkbox"
                                id="remember_me"
@@ -414,7 +414,7 @@
                         <label class="form-check-label" for="remember_me">
                             Ingat saya
                         </label>
-                    </div>
+                    </div> --}}
 
                     {{-- Submit Button --}}
                     <button type="submit" class="btn btn-primary">Log in</button>

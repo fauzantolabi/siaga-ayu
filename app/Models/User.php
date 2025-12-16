@@ -26,7 +26,7 @@ class User extends Authenticatable
         'updated_at'
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password'];
 
     protected function casts(): array
     {
@@ -34,6 +34,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function setRememberToken($value)
+    {
+        // Do nothing
+    }
+    public function getRememberToken()
+    {
+        return null;
     }
 
     protected $dates = ['deleted_at'];
