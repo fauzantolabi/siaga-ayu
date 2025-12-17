@@ -372,14 +372,14 @@
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
 
-                    {{-- Email Address --}}
+                    {{-- Email Address or Username --}}
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email"
+                        <label for="email">Username atau Email</label>
+                        <input type="text"
                                id="email"
                                name="email"
                                class="form-control"
-                               placeholder="Masukkan email Anda"
+                               placeholder="Masukkan username atau email Anda"
                                value="{{ old('email') }}"
                                required
                                autofocus
