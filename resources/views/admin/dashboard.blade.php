@@ -119,55 +119,135 @@
                                     <i class="bi bi-info-circle"></i> Tidak ada agenda untuk tanggal yang dipilih.
                                 </div>
                             @else
-                                <div class="accordion" id="agendaAccordion">
-                                    @foreach($todayAgendas as $id_jabatan => $agendas)
-                                        @php
-                                            $jabatan = $agendas->first()->jabatan->jabatan ?? 'Tidak diketahui';
-                                            $pd = $agendas->first()->jabatan->perangkatDaerah->perangkat_daerah ?? 'PD Tidak Diketahui';
-                                            $collapseId = 'collapse' . $id_jabatan;
-                                        @endphp
-                                        <div class="accordion-item mb-2 border rounded">
-                                            <h2 class="accordion-header" id="heading{{ $id_jabatan }}">
-                                                <button class="accordion-button fw-bold text-uppercase"
-                                                        type="button"
-                                                        data-bs-toggle="collapse"
-                                                        data-bs-target="#{{ $collapseId }}"
-                                                        aria-expanded="true"
-                                                        aria-controls="{{ $collapseId }}">
-                                                    {{ $jabatan }} - {{ $pd }}
-                                                </button>
-                                            </h2>
-                                            <div id="{{ $collapseId }}"
-                                                 class="accordion-collapse collapse show"
-                                                 aria-labelledby="heading{{ $id_jabatan }}"
-                                                 data-bs-parent="#agendaAccordion">
-                                                <div class="accordion-body">
-                                                    @foreach($agendas as $i => $agenda)
-                                                    <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                                            <strong class="text-primary">{{ $i+1 }}. {{ $agenda->agenda }}</strong>
-                                                        </div>
-                                                        <div class="text-muted small">
-                                                            <div class="mb-1">
-                                                                <i class="bi bi-clock"></i>
-                                                                {{ \Carbon\Carbon::parse($agenda->waktu)->format('H:i') }} WIB
+                                @if($user->role->role_name === 'Admin')
+                                    {{-- UNTUK ADMIN: Group by Perangkat Daerah --}}
+                                    <div class="accordion" id="agendaAccordion">
+                                        @foreach($todayAgendas as $pdId => $agendasByPD)
+                                            @php
+                                                $firstAgenda = $agendasByPD->first();
+                                                $perangkatDaerahName = $firstAgenda->perangkatDaerah->perangkat_daerah ?? 'Perangkat Daerah Tidak Diketahui';
+                                                $collapseId = 'collapse_pd_' . $pdId;
+                                            @endphp
+                                            <div class="accordion-item mb-3 border rounded">
+                                                <h2 class="accordion-header" id="heading_pd_{{ $pdId }}">
+                                                    <button class="accordion-button fw-bold text-uppercase"
+                                                            type="button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#{{ $collapseId }}"
+                                                            aria-expanded="true"
+                                                            aria-controls="{{ $collapseId }}">
+                                                        {{ $perangkatDaerahName }}
+                                                        <span class="badge bg-secondary ms-2">{{ $agendasByPD->count() }} agenda</span>
+                                                    </button>
+                                                </h2>
+                                                <div id="{{ $collapseId }}"
+                                                     class="accordion-collapse collapse show"
+                                                     aria-labelledby="heading_pd_{{ $pdId }}"
+                                                     data-bs-parent="#agendaAccordion">
+                                                    <div class="accordion-body">
+                                                        @foreach($agendasByPD as $agenda)
+                                                            <div class="card mb-2">
+                                                                <div class="card-header bg-light">
+                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                        <div>
+                                                                            <span class="badge bg-primary me-2">{{ \Carbon\Carbon::parse($agenda->waktu)->format('H:i') }}</span>
+                                                                            <strong>{{ $agenda->agenda }}</strong>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="card-body py-2">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <div class="mb-2">
+                                                                                <strong>Pejabat:</strong>
+                                                                                <div>
+                                                                                    @foreach($agenda->jabatans as $jabatan)
+                                                                                        <span class="badge bg-info me-1 mb-1">{{ $jabatan->jabatan }}</span>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="mb-2">
+                                                                                <strong>Tempat:</strong><br>
+                                                                                <i class="bi bi-geo-alt"></i> {{ $agenda->tempat }}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <div class="mb-2">
+                                                                                <strong>Pakaian:</strong><br>
+                                                                                {{ $agenda->pakaian->pakaian ?? 'Belum ditentukan' }}
+                                                                            </div>
+                                                                            <div class="mb-0">
+                                                                                <strong>Misi/Program:</strong><br>
+                                                                                {{ $agenda->misi->misi ?? '-' }} {{ $agenda->program ? '→ ' . $agenda->program->description : '' }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <div class="mb-1">
-                                                                <i class="bi bi-geo-alt"></i>
-                                                                {{ $agenda->tempat }}
-                                                            </div>
-                                                            <div>
-                                                                <i class="bi bi-person-badge"></i>
-                                                                {{ $agenda->pakaian->pakaian ?? 'Pakaian belum ditentukan' }}
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    {{-- UNTUK USER: Tampilkan agenda tanpa grouping --}}
+                                    <div class="accordion" id="agendaAccordion">
+                                        @foreach($todayAgendas as $groupId => $agendas)
+                                            @foreach($agendas as $agenda)
+                                                @php
+                                                    $collapseId = 'collapse_' . $agenda->id;
+                                                @endphp
+                                                <div class="accordion-item mb-2 border rounded">
+                                                    <h2 class="accordion-header" id="heading_{{ $agenda->id }}">
+                                                        <button class="accordion-button fw-bold"
+                                                                type="button"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#{{ $collapseId }}"
+                                                                aria-expanded="true"
+                                                                aria-controls="{{ $collapseId }}">
+                                                            <span class="badge bg-primary me-2">{{ \Carbon\Carbon::parse($agenda->waktu)->format('H:i') }}</span>
+                                                            {{ $agenda->agenda }}
+                                                        </button>
+                                                    </h2>
+                                                    <div id="{{ $collapseId }}"
+                                                         class="accordion-collapse collapse show"
+                                                         aria-labelledby="heading_{{ $agenda->id }}"
+                                                         data-bs-parent="#agendaAccordion">
+                                                        <div class="accordion-body">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-2">
+                                                                        <strong>Pejabat:</strong>
+                                                                        <div>
+                                                                            @foreach($agenda->jabatans as $jabatan)
+                                                                                <span class="badge bg-info me-1 mb-1">{{ $jabatan->jabatan }}</span>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="mb-2">
+                                                                        <strong>Tempat:</strong><br>
+                                                                        <i class="bi bi-geo-alt"></i> {{ $agenda->tempat }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="mb-2">
+                                                                        <strong>Pakaian:</strong><br>
+                                                                        {{ $agenda->pakaian->pakaian ?? 'Belum ditentukan' }}
+                                                                    </div>
+                                                                    <div class="mb-0">
+                                                                        <strong>Misi/Program:</strong><br>
+                                                                        {{ $agenda->misi->misi ?? '-' }} {{ $agenda->program ? '→ ' . $agenda->program->description : '' }}
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    @endforeach
                                                 </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
+                                            @endforeach
+                                        @endforeach
+                                    </div>
+                                @endif
                             @endif
                         </div>
                     </div>

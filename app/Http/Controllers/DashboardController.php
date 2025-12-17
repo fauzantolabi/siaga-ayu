@@ -34,12 +34,12 @@ class DashboardController extends Controller
         // Filter berdasarkan role
         if ($user->role->role_name === 'User') {
             // User hanya melihat agenda dari perangkat daerahnya
-            $agendaQuery->whereHas('jabatan', function ($q) use ($user) {
+            $agendaQuery->whereHas('jabatans', function ($q) use ($user) {
                 $q->where('id_perangkat_daerah', $user->id_perangkat_daerah);
             });
         } elseif ($selectedPD) {
             // Admin dengan filter perangkat daerah
-            $agendaQuery->whereHas('jabatan', fn($q) => $q->where('id_perangkat_daerah', $selectedPD));
+            $agendaQuery->whereHas('jabatans', fn($q) => $q->where('id_perangkat_daerah', $selectedPD));
         }
 
         $agendaHariIni = (clone $agendaQuery)
@@ -59,14 +59,29 @@ class DashboardController extends Controller
 
         // === AGENDA HARI INI (berdasarkan tanggal yang dipilih) ===
         $todayAgendasQuery = (clone $agendaQuery)
-            ->with(['pakaian', 'jabatan.perangkatDaerah', 'surat', 'jabatan'])
-            ->whereDate('tanggal', $selectedDate)
-            ->join('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
-            ->orderBy('jabatans.prioritas', 'asc') // Urutkan berdasarkan prioritas jabatan
-            ->orderBy('agendas.waktu', 'asc')
-            ->select('agendas.*');
+            ->with(['pakaian', 'jabatans.perangkatDaerah', 'surat', 'jabatans', 'misi', 'program', 'perangkatDaerah'])
+            ->whereDate('tanggal', $selectedDate);
 
-        $todayAgendas = $todayAgendasQuery->get()->groupBy('id_jabatan');
+        // Jika Admin pusat, groupBy perangkat daerah dan urutkan berdasarkan prioritas
+        if ($user->role->role_name === 'Admin') {
+            $todayAgendas = $todayAgendasQuery
+                ->get()
+                ->sortBy(function ($agenda) {
+                    return $agenda->perangkatDaerah->prioritas ?? 999;
+                })
+                ->groupBy(function ($agenda) {
+                    return $agenda->id_perangkat_daerah;
+                });
+        } else {
+            // User hanya lihat agenda tanpa grouping
+            $todayAgendas = $todayAgendasQuery
+                ->orderBy('agendas.waktu', 'asc')
+                ->select('agendas.*')
+                ->get()
+                ->groupBy(function ($agenda) {
+                    return 'user_' . $agenda->id;
+                });
+        }
 
         // === PERANGKAT DAERAH (untuk filter Admin) ===
         $perangkatDaerahs = PerangkatDaerah::orderBy('singkatan')->get();
@@ -78,7 +93,8 @@ class DashboardController extends Controller
 
         // Filter berdasarkan role untuk statistik
         if ($user->role->role_name === 'User') {
-            $misiStatsQuery->leftJoin('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
+            $misiStatsQuery->leftJoin('agenda_jabatan', 'agendas.id', '=', 'agenda_jabatan.id_agenda')
+                ->leftJoin('jabatans', 'agenda_jabatan.id_jabatan', '=', 'jabatans.id')
                 ->where(function ($q) use ($user) {
                     $q->where('jabatans.id_perangkat_daerah', $user->id_perangkat_daerah)
                         ->orWhereNull('agendas.id'); // Include misi without agenda
@@ -112,7 +128,8 @@ class DashboardController extends Controller
 
         // Filter berdasarkan role untuk statistik
         if ($user->role->role_name === 'User') {
-            $programStatsQuery->leftJoin('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
+            $programStatsQuery->leftJoin('agenda_jabatan', 'agendas.id', '=', 'agenda_jabatan.id_agenda')
+                ->leftJoin('jabatans', 'agenda_jabatan.id_jabatan', '=', 'jabatans.id')
                 ->where(function ($q) use ($user) {
                     $q->where('jabatans.id_perangkat_daerah', $user->id_perangkat_daerah)
                         ->orWhereNull('agendas.id'); // Include program without agenda
@@ -149,7 +166,7 @@ class DashboardController extends Controller
 
         // Filter berdasarkan role untuk trend
         if ($user->role->role_name === 'User') {
-            $agendaTrendQuery->whereHas('jabatan', function ($q) use ($user) {
+            $agendaTrendQuery->whereHas('jabatans', function ($q) use ($user) {
                 $q->where('id_perangkat_daerah', $user->id_perangkat_daerah);
             });
         }

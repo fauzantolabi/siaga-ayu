@@ -163,9 +163,9 @@ class AgendaController extends Controller
             'tempat' => 'required|string|max:255',
             'agenda' => 'required|string|max:255',
             'id_pakaian' => 'nullable|exists:pakaians,id',
+            'id_perangkat_daerah' => 'required|exists:perangkat_daerahs,id',
             'id_jabatans' => 'required|array|min:1',
             'id_jabatans.*' => 'required|exists:jabatans,id',
-            'id_user' => 'nullable|exists:users,id',
             'id_misi' => 'nullable|exists:misis,id',
             'id_program' => 'nullable|exists:programs,id',
         ]);
@@ -197,6 +197,9 @@ class AgendaController extends Controller
         // Buat agenda tanpa id_jabatan (karena menggunakan many-to-many)
         $agendaData = $validatedData;
         unset($agendaData['id_jabatans']);
+
+        // Set id_user dari user yang sedang login
+        $agendaData['id_user'] = $user->id;
 
         $agenda = Agenda::create($agendaData);
 
@@ -240,11 +243,9 @@ class AgendaController extends Controller
         $programs = Program::where('id_misi', $agenda->id_misi)->get();
 
         // Untuk admin, ambil semua perangkat daerah
-        if (Auth::user()->role->role_name === 'Admin') {
-            $perangkatDaerah = PerangkatDaerah::all();
-        }
+        $perangkatDaerah = PerangkatDaerah::all();
 
-        return view('admin.agenda.edit', compact('agenda', 'surats', 'jabatans', 'pakaian', 'misis', 'programs'));
+        return view('admin.agenda.edit', compact('agenda', 'surats', 'jabatans', 'pakaian', 'misis', 'programs', 'perangkatDaerah'));
     }
 
     public function update(Request $request, $id)
@@ -255,6 +256,7 @@ class AgendaController extends Controller
             'tanggal' => 'required|date',
             'waktu' => 'required',
             'tempat' => 'required|string|max:255',
+            'id_perangkat_daerah' => 'required|exists:perangkat_daerahs,id',
             'id_jabatans' => 'required|array|min:1',
             'id_jabatans.*' => 'required|exists:jabatans,id',
             'id_pakaian' => 'nullable|exists:pakaians,id',
@@ -276,6 +278,7 @@ class AgendaController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'waktu' => $validated['waktu'],
                 'tempat' => $validated['tempat'],
+                'id_perangkat_daerah' => $validated['id_perangkat_daerah'],
                 'id_pakaian' => $validated['id_pakaian'],
                 'id_misi' => $validated['id_misi'],
                 'id_program' => $validated['id_program'],

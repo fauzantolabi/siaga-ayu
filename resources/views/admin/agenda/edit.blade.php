@@ -1,4 +1,4 @@
-@extends('admin.layout.master')
+@extends('admin.layout.master-navbar')
 @section('tittle', 'Edit Agenda')
 
 @section('content')
@@ -77,6 +77,25 @@
                             <label for="tempat">Tempat</label>
                             <input type="text" class="form-control" id="tempat" name="tempat"
                                 value="{{ old('tempat', $agenda->tempat) }}" required>
+                        </div>
+
+                        {{-- Perangkat Daerah --}}
+                        <div class="form-group mb-3">
+                            <label for="id_perangkat_daerah">Perangkat Daerah</label>
+                            @if(Auth::user()->role->role_name === 'User')
+                                <input type="text" class="form-control"
+                                    value="{{ $agenda->perangkatDaerah->singkatan ?? '-' }}" readonly>
+                                <input type="hidden" name="id_perangkat_daerah" value="{{ $agenda->id_perangkat_daerah }}">
+                            @else
+                                <select name="id_perangkat_daerah" id="id_perangkat_daerah" class="form-control" required>
+                                    <option value="">-- Pilih Perangkat Daerah --</option>
+                                    @foreach($perangkatDaerah as $pd)
+                                        <option value="{{ $pd->id }}" {{ old('id_perangkat_daerah', $agenda->id_perangkat_daerah) == $pd->id ? 'selected' : '' }}>
+                                            {{ $pd->singkatan }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
                     </div>
 
@@ -281,6 +300,71 @@ $(document).ready(function() {
         // Delay sedikit untuk memastikan DOM sudah ready
         setTimeout(function() {
             loadProgram(initialMisiId, initialProgramId);
+        }, 300);
+    }
+
+    // ==========================================
+    // DEPENDENT DROPDOWN: JABATAN BERDASARKAN PERANGKAT DAERAH
+    // ==========================================
+    function loadJabatan(perangkatId, selectedJabatanIds = []) {
+        const $jabatanSelect = $('#id_jabatans');
+        console.log('📍 Loading Jabatan for Perangkat Daerah ID:', perangkatId);
+        console.log('📍 Selected Jabatan IDs:', selectedJabatanIds);
+
+        $jabatanSelect.html('<option value="" disabled>Memuat data jabatan...</option>').prop('disabled', true);
+
+        if (!perangkatId) {
+            $jabatanSelect.html('<option value="" disabled>-- Pilih Jabatan --</option>').prop('disabled', false);
+            return;
+        }
+
+        $.ajax({
+            url: "{{ url('/get-jabatan') }}/" + perangkatId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                console.log('✅ Jabatan Data Received:', data);
+                $jabatanSelect.empty().prop('disabled', false);
+                $jabatanSelect.append('<option value="" disabled>-- Pilih Jabatan --</option>');
+
+                if (data.length > 0) {
+                    $.each(data, function(index, jabatan) {
+                        const isSelected = selectedJabatanIds.includes(jabatan.id) ? 'selected' : '';
+                        $jabatanSelect.append($('<option>', {
+                            value: jabatan.id,
+                            text: jabatan.jabatan,
+                            selected: isSelected
+                        }));
+                    });
+                } else {
+                    $jabatanSelect.append('<option value="" disabled>Tidak ada jabatan tersedia</option>');
+                }
+
+                console.log('✅ Jabatan options populated with selected values');
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Error loading jabatan:', error);
+                $jabatanSelect.html('<option value="" disabled>Gagal memuat jabatan</option>').prop('disabled', false);
+            }
+        });
+    }
+
+    // Event listener untuk perubahan Perangkat Daerah
+    $('#id_perangkat_daerah').on('change', function() {
+        const perangkatId = $(this).val();
+        console.log('🔄 Perangkat Daerah changed to:', perangkatId);
+        loadJabatan(perangkatId, []);
+    });
+
+    // Load jabatan saat halaman pertama kali dimuat (untuk existing data)
+    const initialPerangkatId = $('#id_perangkat_daerah').val();
+    const initialJabatanIds = {!! json_encode($agenda->jabatans->pluck('id')->toArray()) !!};
+
+    if (initialPerangkatId) {
+        console.log('🔄 Loading initial jabatan. Perangkat:', initialPerangkatId, 'Jabatan IDs:', initialJabatanIds);
+        // Delay sedikit untuk memastikan DOM sudah ready
+        setTimeout(function() {
+            loadJabatan(initialPerangkatId, initialJabatanIds);
         }, 300);
     }
 
