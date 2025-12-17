@@ -60,7 +60,7 @@
 
                         {{-- Tanggal --}}
                         <div class="form-group mb-3">
-                            <label for="tanggal">Tanggal Agenda</label>
+                            <label for="tanggal">Tanggal</label>
                             <input type="text" class="form-control flatpickr-no-config" id="tanggal" name="tanggal"
                                 value="{{ old('tanggal', $agenda->tanggal) }}" required autocomplete="off">
                         </div>
@@ -70,13 +70,6 @@
                             <label for="waktu">Waktu</label>
                             <input type="text" class="form-control flatpickr-time-picker-24h" id="waktu" name="waktu"
                                 value="{{ old('waktu', $agenda->waktu) }}" required autocomplete="off">
-                        </div>
-
-                        {{-- Tempat --}}
-                        <div class="form-group mb-3">
-                            <label for="tempat">Tempat</label>
-                            <input type="text" class="form-control" id="tempat" name="tempat"
-                                value="{{ old('tempat', $agenda->tempat) }}" required>
                         </div>
 
                         {{-- Perangkat Daerah --}}
@@ -97,10 +90,41 @@
                                 </select>
                             @endif
                         </div>
+
+                        {{-- Jabatan (Multiple) --}}
+                        <div class="form-group mb-3">
+                            <label for="id_jabatans">Jabatan <span class="text-danger">*Bisa pilih lebih dari satu</span></label>
+                            <select name="id_jabatans[]" id="id_jabatans" class="form-select" multiple required>
+                                <option value="" disabled>-- Pilih Jabatan --</option>
+                            </select>
+                            <small class="text-muted d-block mt-2">
+                              <i class="bi bi-info-circle"></i> Gunakan Ctrl+Click (atau Cmd+Click di Mac) untuk memilih lebih dari satu jabatan
+                            </small>
+                        </div>
                     </div>
 
                     {{-- Kolom kanan --}}
                     <div class="col-md-6">
+                        {{-- Tempat --}}
+                        <div class="form-group mb-3">
+                            <label for="tempat">Tempat</label>
+                            <input type="text" class="form-control" id="tempat" name="tempat"
+                                value="{{ old('tempat', $agenda->tempat) }}" required>
+                        </div>
+
+                        {{-- Pakaian --}}
+                        <div class="form-group mb-3">
+                            <label for="id_pakaian">Pakaian</label>
+                            <select name="id_pakaian" id="id_pakaian" class="form-select">
+                                <option value="">-- Pilih Pakaian --</option>
+                                @foreach($pakaian as $p)
+                                    <option value="{{ $p->id }}" {{ old('id_pakaian', $agenda->id_pakaian) == $p->id ? 'selected' : '' }}>
+                                        {{ $p->pakaian }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         {{-- Misi --}}
                         <div class="form-group mb-3">
                             <label for="id_misi">Misi</label>
@@ -122,37 +146,6 @@
                                 @foreach($programs as $program)
                                     <option value="{{ $program->id }}" {{ old('id_program', $agenda->id_program) == $program->id ? 'selected' : '' }}>
                                         {{ $program->description }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- Jabatan (Multiple) --}}
-                        <div class="form-group mb-3">
-                            <label for="id_jabatans">Jabatan <span class="text-danger">*Bisa pilih lebih dari satu</span></label>
-                            <select name="id_jabatans[]" id="id_jabatans" class="form-select" multiple required>
-                                <option value="" disabled>-- Pilih Jabatan --</option>
-                                @foreach($jabatans as $j)
-                                    <option value="{{ $j->id }}"
-                                      @if(is_array(old('id_jabatans')) && in_array($j->id, old('id_jabatans'))) selected
-                                      @elseif($agenda->jabatans->contains($j->id)) selected @endif>
-                                        {{ $j->jabatan }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted d-block mt-2">
-                              <i class="bi bi-info-circle"></i> Gunakan Ctrl+Click (atau Cmd+Click di Mac) untuk memilih lebih dari satu jabatan
-                            </small>
-                        </div>
-
-                        {{-- Pakaian --}}
-                        <div class="form-group mb-3">
-                            <label for="id_pakaian">Pakaian</label>
-                            <select name="id_pakaian" id="id_pakaian" class="form-select">
-                                <option value="">-- Pilih Pakaian --</option>
-                                @foreach($pakaian as $p)
-                                    <option value="{{ $p->id }}" {{ old('id_pakaian', $agenda->id_pakaian) == $p->id ? 'selected' : '' }}>
-                                        {{ $p->pakaian }}
                                     </option>
                                 @endforeach
                             </select>
@@ -324,17 +317,25 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(data) {
                 console.log('✅ Jabatan Data Received:', data);
+                console.log('🔍 Selected IDs to match:', selectedJabatanIds);
                 $jabatanSelect.empty().prop('disabled', false);
                 $jabatanSelect.append('<option value="" disabled>-- Pilih Jabatan --</option>');
 
                 if (data.length > 0) {
                     $.each(data, function(index, jabatan) {
-                        const isSelected = selectedJabatanIds.includes(jabatan.id) ? 'selected' : '';
-                        $jabatanSelect.append($('<option>', {
+                        const isSelected = selectedJabatanIds.includes(jabatan.id);
+                        console.log(`📌 Jabatan ID ${jabatan.id}: ${isSelected ? 'SELECTED' : 'NOT SELECTED'}`);
+
+                        const $option = $('<option>', {
                             value: jabatan.id,
-                            text: jabatan.jabatan,
-                            selected: isSelected
-                        }));
+                            text: jabatan.jabatan
+                        });
+
+                        if (isSelected) {
+                            $option.prop('selected', true);
+                        }
+
+                        $jabatanSelect.append($option);
                     });
                 } else {
                     $jabatanSelect.append('<option value="" disabled>Tidak ada jabatan tersedia</option>');
