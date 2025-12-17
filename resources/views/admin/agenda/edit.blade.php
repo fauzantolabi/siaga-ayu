@@ -1,4 +1,4 @@
-@extends('admin.layout.master-navbar')
+@extends('admin.layout.master')
 @section('tittle', 'Edit Agenda')
 
 @section('content')
@@ -52,28 +52,28 @@
                         </div>
 
                         {{-- Nama Agenda --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="agenda">Nama Agenda</label>
                             <input type="text" class="form-control" id="agenda" name="agenda"
                                 value="{{ old('agenda', $agenda->agenda) }}" required>
                         </div>
 
                         {{-- Tanggal --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="tanggal">Tanggal Agenda</label>
                             <input type="text" class="form-control flatpickr-no-config" id="tanggal" name="tanggal"
                                 value="{{ old('tanggal', $agenda->tanggal) }}" required autocomplete="off">
                         </div>
 
                         {{-- Waktu --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="waktu">Waktu</label>
                             <input type="text" class="form-control flatpickr-time-picker-24h" id="waktu" name="waktu"
                                 value="{{ old('waktu', $agenda->waktu) }}" required autocomplete="off">
                         </div>
 
                         {{-- Tempat --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="tempat">Tempat</label>
                             <input type="text" class="form-control" id="tempat" name="tempat"
                                 value="{{ old('tempat', $agenda->tempat) }}" required>
@@ -83,12 +83,12 @@
                     {{-- Kolom kanan --}}
                     <div class="col-md-6">
                         {{-- Misi --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="id_misi">Misi</label>
                             <select name="id_misi" id="id_misi" class="form-control" required>
                                 <option value="">-- Pilih Misi --</option>
                                 @foreach($misis as $misi)
-                                    <option value="{{ $misi->id }}" {{ $agenda->id_misi == $misi->id ? 'selected' : '' }}>
+                                    <option value="{{ $misi->id }}" {{ old('id_misi', $agenda->id_misi) == $misi->id ? 'selected' : '' }}>
                                         {{ $misi->misi }}
                                     </option>
                                 @endforeach
@@ -96,12 +96,12 @@
                         </div>
 
                         {{-- Program --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="id_program">Program</label>
                             <select name="id_program" id="id_program" class="form-control" required>
                                 <option value="">-- Pilih Program --</option>
                                 @foreach($programs as $program)
-                                    <option value="{{ $program->id }}" {{ $agenda->id_program == $program->id ? 'selected' : '' }}>
+                                    <option value="{{ $program->id }}" {{ old('id_program', $agenda->id_program) == $program->id ? 'selected' : '' }}>
                                         {{ $program->description }}
                                     </option>
                                 @endforeach
@@ -109,12 +109,12 @@
                         </div>
 
                         {{-- Jabatan --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="id_jabatan">Jabatan</label>
                             <select name="id_jabatan" id="id_jabatan" class="form-select" required>
                                 <option value="">-- Pilih Jabatan --</option>
                                 @foreach($jabatans as $j)
-                                    <option value="{{ $j->id }}" {{ $agenda->id_jabatan == $j->id ? 'selected' : '' }}>
+                                    <option value="{{ $j->id }}" {{ old('id_jabatan', $agenda->id_jabatan) == $j->id ? 'selected' : '' }}>
                                         {{ $j->jabatan }}
                                     </option>
                                 @endforeach
@@ -122,12 +122,12 @@
                         </div>
 
                         {{-- Pakaian --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="id_pakaian">Pakaian</label>
                             <select name="id_pakaian" id="id_pakaian" class="form-select">
                                 <option value="">-- Pilih Pakaian --</option>
                                 @foreach($pakaian as $p)
-                                    <option value="{{ $p->id }}" {{ $agenda->id_pakaian == $p->id ? 'selected' : '' }}>
+                                    <option value="{{ $p->id }}" {{ old('id_pakaian', $agenda->id_pakaian) == $p->id ? 'selected' : '' }}>
                                         {{ $p->pakaian }}
                                     </option>
                                 @endforeach
@@ -135,7 +135,7 @@
                         </div>
 
                         {{-- Resume --}}
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="resume">Resume</label>
                             <textarea class="form-control" id="resume" name="resume" rows="3">{{ old('resume', $agenda->resume) }}</textarea>
                         </div>
@@ -175,61 +175,111 @@
                 {{-- Tombol --}}
                 <div class="form-group d-flex justify-content-end mt-4">
                     <a href="{{ route('agenda.index') }}" class="btn btn-danger me-2">Batal</a>
-                    <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
+                    <button type="reset" class="btn btn-light-secondary me-2">Reset</button>
                     <button type="submit" class="btn btn-primary">Update</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+@endsection
 
-{{-- Flatpickr --}}
+@section('scripts')
+{{-- Flatpickr CSS & JS --}}
 <link rel="stylesheet" href="{{ asset('assets/admin/extensions/flatpickr/flatpickr.min.css') }}">
 <script src="{{ asset('assets/admin/extensions/flatpickr/flatpickr.min.js') }}"></script>
+
+{{-- jQuery --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
-    flatpickr(".flatpickr-no-config", {});
+$(document).ready(function() {
+    console.log('🚀 Agenda Edit Script Loaded');
+
+    // ==========================================
+    // FLATPICKR INITIALIZATION
+    // ==========================================
+    flatpickr(".flatpickr-no-config", {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d/m/Y"
+    });
+
     flatpickr(".flatpickr-time-picker-24h", {
         enableTime: true,
         noCalendar: true,
         dateFormat: "H:i",
         time_24hr: true
     });
-</script>
 
-@endsection
-
-@section('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function () {
-    $('#id_misi').on('change', function () {
-        const misiId = $(this).val();
+    // ==========================================
+    // DEPENDENT DROPDOWN: PROGRAM BERDASARKAN MISI
+    // ==========================================
+    function loadProgram(misiId, selectedProgramId = null) {
         const $programSelect = $('#id_program');
 
-        $programSelect.html('<option value="">Memuat...</option>');
+        console.log('📍 Loading Program for Misi ID:', misiId);
+
+        // Reset dropdown
+        $programSelect.html('<option value="">Memuat data program...</option>').prop('disabled', true);
 
         if (!misiId) {
-            $programSelect.html('<option value="">-- Pilih Program --</option>');
+            $programSelect.html('<option value="">-- Pilih Program --</option>').prop('disabled', false);
             return;
         }
 
         $.ajax({
-            url: '/get-programs/' + misiId,
+            url: "{{ url('/get-programs') }}/" + misiId,
             type: 'GET',
-            success: function (data) {
-                $programSelect.empty();
+            dataType: 'json',
+            success: function(data) {
+                console.log('✅ Program Data Received:', data);
+                console.log('📊 Total Program:', data.length);
+
+                $programSelect.empty().prop('disabled', false);
                 $programSelect.append('<option value="">-- Pilih Program --</option>');
-                $.each(data, function (i, program) {
-                    $programSelect.append(
-                        `<option value="${program.id}">${program.description}</option>`
-                    );
-                });
+
+                if (data.length > 0) {
+                    $.each(data, function(index, program) {
+                        const isSelected = selectedProgramId && program.id == selectedProgramId ? 'selected' : '';
+                        $programSelect.append(
+                            `<option value="${program.id}" ${isSelected}>${program.description}</option>`
+                        );
+                    });
+                    console.log('✅ Program options populated');
+                } else {
+                    $programSelect.append('<option value="">Tidak ada program tersedia</option>');
+                    console.warn('⚠️ No program found for this misi');
+                }
             },
-            error: function () {
-                $programSelect.html('<option value="">Gagal memuat program</option>');
+            error: function(xhr, status, error) {
+                console.error('❌ Error loading program:', error);
+                console.error('Response:', xhr.responseText);
+                $programSelect.html('<option value="">Gagal memuat program</option>').prop('disabled', false);
             }
         });
+    }
+
+    // Event listener untuk perubahan Misi
+    $('#id_misi').on('change', function() {
+        const misiId = $(this).val();
+        console.log('🔄 Misi changed to:', misiId);
+        loadProgram(misiId);
     });
+
+    // Load program saat halaman pertama kali dimuat (untuk existing data)
+    const initialMisiId = $('#id_misi').val();
+    const initialProgramId = '{{ old("id_program", $agenda->id_program) }}';
+
+    if (initialMisiId) {
+        console.log('🔄 Loading initial program. Misi:', initialMisiId, 'Program:', initialProgramId);
+        // Delay sedikit untuk memastikan DOM sudah ready
+        setTimeout(function() {
+            loadProgram(initialMisiId, initialProgramId);
+        }, 300);
+    }
+
+    console.log('✅ All event listeners registered');
 });
 </script>
 @endsection

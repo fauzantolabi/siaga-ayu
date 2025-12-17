@@ -14,6 +14,9 @@ class PerangkatDaerahSeeder extends Seeder
 
         $items = [
             // Sekretariat Daerah
+            ['perangkat_daerah' => 'KABUPATEN INDRAMAYU', 'singkatan' => 'KAB. INDRAMAYU'],
+
+            // Sekretariat Daerah
             ['perangkat_daerah' => 'SEKRETARIAT DAERAH', 'singkatan' => 'SETDA'],
 
             // Sekretariat DPRD

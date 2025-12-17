@@ -133,7 +133,7 @@ class AgendaController extends Controller
     public function getProgramsByMisi($id_misi)
     {
         try {
-            Log::info('Getting programs for misi_id: ' . $id_misi);
+            Log::info('Getting programs for id_misi: ' . $id_misi);
 
             $programs = Program::where('id_misi', $id_misi)
                 ->select('id', 'description')
@@ -212,84 +212,92 @@ class AgendaController extends Controller
 
     public function edit($id)
     {
-        $agenda = Agenda::findOrFail($id);
-        $user = auth()->user();
+        $agenda = Agenda::with(['surat', 'jabatan', 'pakaian', 'misi', 'program', 'photos'])->findOrFail($id);
 
-        // Data umum
-        $pakaian = Pakaian::all();
         $surats = Surat::all();
-        $perangkatDaerahs = PerangkatDaerah::all();
-        $misis = \App\Models\Misi::orderBy('misi')->get();
-        $programs = \App\Models\Program::where('id_misi', $agenda->id_misi)->get();
+        $jabatans = Jabatan::all();
+        $pakaian = Pakaian::all();
+        $misis = Misi::all();
 
-        // Ambil jabatan sesuai role
-        if ($user->role->role_name === 'User') {
-            // user cuma melihat/menyeleksi jabatan dari perangkat daerah miliknya
-            $jabatans = Jabatan::where('id_perangkat_daerah', $user->id_perangkat_daerah)->get();
-        } else {
-            // admin dapat melihat semua jabatan (atau bisa kosong jika mau pakai AJAX)
-            $jabatans = Jabatan::all();
+        // Load programs berdasarkan misi yang sudah dipilih
+        $programs = Program::where('id_misi', $agenda->id_misi)->get();
+
+        // Untuk admin, ambil semua perangkat daerah
+        if (Auth::user()->role->role_name === 'Admin') {
+            $perangkatDaerah = PerangkatDaerah::all();
         }
 
-        // Surat yang terkait dengan agenda (dipakai untuk menampilkan selected surat)
-        $selectedSurat = $agenda->surat ?? null;
-
-        return view('admin.agenda.edit', compact(
-            'agenda',
-            'pakaian',
-            'jabatans',
-            'surats',
-            'perangkatDaerahs',
-            'selectedSurat',
-            'misis',
-            'programs'
-        ));
+        return view('admin.agenda.edit', compact('agenda', 'surats', 'jabatans', 'pakaian', 'misis', 'programs'));
     }
 
-
-
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        $agenda = Agenda::findOrFail($id);
-
-        $validatedData = $request->validate([
+        $validated = $request->validate([
             'id_surat' => 'required|exists:surats,id',
+            'agenda' => 'required|string|max:255',
             'tanggal' => 'required|date',
             'waktu' => 'required',
-            'agenda' => 'required|string|max:255',
             'tempat' => 'required|string|max:255',
-            'id_jabatan' => 'nullable|exists:jabatans,id',
+            'id_jabatan' => 'required|exists:jabatans,id',
             'id_pakaian' => 'nullable|exists:pakaians,id',
+            'id_misi' => 'required|exists:misis,id',
+            'id_program' => 'required|exists:programs,id',
             'resume' => 'nullable|string',
-            'hapus_foto.*' => 'nullable|exists:agenda_photos,id',
             'fotos.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'hapus_foto' => 'nullable|array',
+            'hapus_foto.*' => 'exists:agenda_photos,id'
         ]);
 
-        // Update data utama
-        $agenda->update($validatedData);
+        try {
+            $agenda = Agenda::findOrFail($id);
 
-        // Hapus foto yang dipilih
-        if ($request->filled('hapus_foto')) {
-            foreach ($request->hapus_foto as $fotoId) {
-                $foto = $agenda->photos()->find($fotoId);
-                if ($foto) {
-                    if (file_exists(storage_path('app/public/' . $foto->path))) {
-                        unlink(storage_path('app/public/' . $foto->path));
+            // Update data agenda
+            $agenda->update([
+                'id_surat' => $validated['id_surat'],
+                'agenda' => $validated['agenda'],
+                'tanggal' => $validated['tanggal'],
+                'waktu' => $validated['waktu'],
+                'tempat' => $validated['tempat'],
+                'id_jabatan' => $validated['id_jabatan'],
+                'id_pakaian' => $validated['id_pakaian'],
+                'id_misi' => $validated['id_misi'],
+                'id_program' => $validated['id_program'],
+                'resume' => $validated['resume'],
+            ]);
+
+            // Hapus foto yang dipilih
+            if ($request->has('hapus_foto')) {
+                foreach ($request->hapus_foto as $photoId) {
+                    $photo = AgendaPhoto::find($photoId);
+                    if ($photo && $photo->agenda_id == $agenda->id) {
+                        // Hapus file dari storage
+                        Storage::disk('public')->delete($photo->path);
+                        // Hapus record dari database
+                        $photo->delete();
                     }
-                    $foto->delete();
                 }
             }
-        }
 
-        // Tambah foto baru
-        if ($request->hasFile('fotos')) {
-            foreach ($request->file('fotos') as $file) {
-                $path = $file->store('agenda_foto', 'public');
-                $agenda->photos()->create(['path' => $path]);
+            // Upload foto baru
+            if ($request->hasFile('fotos')) {
+                foreach ($request->file('fotos') as $foto) {
+                    $path = $foto->store('agenda_photos', 'public');
+
+                    AgendaPhoto::create([
+                        'agenda_id' => $agenda->id,
+                        'path' => $path
+                    ]);
+                }
             }
-        }
 
-        return redirect()->route('agenda.index')->with('success', ' Agenda berhasil diperbarui.');
+            return redirect()->route('agenda.index')
+                ->with('success', 'Agenda berhasil diupdate!');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal mengupdate agenda: ' . $e->getMessage());
+        }
     }
 
 
