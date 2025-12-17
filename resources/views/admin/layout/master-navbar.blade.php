@@ -427,6 +427,18 @@
             cursor: pointer;
         }
 
+        .dropdown-item-custom i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+        }
+
+        .dropdown-item-custom span {
+            display: flex;
+            align-items: center;
+        }
+
         .dropdown-item-custom:hover {
             background-color: rgba(67, 94, 190, 0.1);
             color: #435ebe;
@@ -1010,7 +1022,11 @@
                 <div class="user-dropdown">
                     <button class="user-menu" onclick="toggleUserDropdown()">
                         <div class="avatar">
-                            <img src="{{ asset('assets/admin/compiled/jpg/1.jpg') }}" alt="Avatar">
+                            @if (Auth::user()->foto)
+                                <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="Avatar">
+                            @else
+                                <img src="{{ asset('assets/admin/compiled/jpg/1.jpg') }}" alt="Avatar">
+                            @endif
                         </div>
                         <div class="user-info">
                             <h6>{{ Auth::user()->fullname }}</h6>
@@ -1023,6 +1039,11 @@
                         <div class="dropdown-header">
                             Hello, {{ Auth::user()->fullname }}!
                         </div>
+                        <a href="{{ route('profile.show') }}" class="dropdown-item-custom">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Profil Saya</span>
+                        </a>
+                        <hr style="margin: 0.5rem 0; border-color: #e9ecef;">
                         <form action="{{ route('logout') }}" method="POST"
                               onsubmit="return confirm('Apakah Anda yakin ingin logout?');">
                             @csrf

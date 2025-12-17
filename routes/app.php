@@ -29,6 +29,11 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard - bisa diakses semua user
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Profile user
+    Route::get('/profile/show', 'App\Http\Controllers\ProfileUserController@show')->name('profile.show');
+    Route::get('/profile/edit', 'App\Http\Controllers\ProfileUserController@edit')->name('profile.edit');
+    Route::put('/profile', 'App\Http\Controllers\ProfileUserController@update')->name('profile.update');
+
     // ===========================
     // 👥 Admin & User
     // ===========================
