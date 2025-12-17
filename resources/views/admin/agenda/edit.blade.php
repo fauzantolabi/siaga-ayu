@@ -108,17 +108,22 @@
                             </select>
                         </div>
 
-                        {{-- Jabatan --}}
+                        {{-- Jabatan (Multiple) --}}
                         <div class="form-group mb-3">
-                            <label for="id_jabatan">Jabatan</label>
-                            <select name="id_jabatan" id="id_jabatan" class="form-select" required>
-                                <option value="">-- Pilih Jabatan --</option>
+                            <label for="id_jabatans">Jabatan <span class="text-danger">*Bisa pilih lebih dari satu</span></label>
+                            <select name="id_jabatans[]" id="id_jabatans" class="form-select" multiple required>
+                                <option value="" disabled>-- Pilih Jabatan --</option>
                                 @foreach($jabatans as $j)
-                                    <option value="{{ $j->id }}" {{ old('id_jabatan', $agenda->id_jabatan) == $j->id ? 'selected' : '' }}>
+                                    <option value="{{ $j->id }}"
+                                      @if(is_array(old('id_jabatans')) && in_array($j->id, old('id_jabatans'))) selected
+                                      @elseif($agenda->jabatans->contains($j->id)) selected @endif>
                                         {{ $j->jabatan }}
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="text-muted d-block mt-2">
+                              <i class="bi bi-info-circle"></i> Gunakan Ctrl+Click (atau Cmd+Click di Mac) untuk memilih lebih dari satu jabatan
+                            </small>
                         </div>
 
                         {{-- Pakaian --}}

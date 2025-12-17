@@ -18,7 +18,6 @@ class Agenda extends Model
         'agenda',
         'tempat',
         'id_surat',
-        'id_jabatan',
         'id_pakaian',
         'id_user',
         'id_perangkat_daerah',
@@ -52,8 +51,22 @@ class Agenda extends Model
     }
 
     /**
-     * Relasi ke Jabatan (Many to One)
-     * Setiap agenda ditujukan untuk satu jabatan
+     * Relasi ke Jabatan (Many to Many)
+     * Setiap agenda dapat ditujukan untuk banyak jabatan
+     */
+    public function jabatans()
+    {
+        return $this->belongsToMany(
+            Jabatan::class,
+            'agenda_jabatan',
+            'id_agenda',
+            'id_jabatan'
+        );
+    }
+
+    /**
+     * Relasi ke Jabatan (Many to One) - Legacy
+     * Setiap agenda terkait dengan satu jabatan utama
      */
     public function jabatan()
     {

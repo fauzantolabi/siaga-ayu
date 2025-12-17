@@ -100,17 +100,21 @@
             @endif
           </div>
 
-          {{-- Jabatan --}}
+          {{-- Jabatan (Multiple) --}}
           <div class="form-group mb-3">
-            <label for="id_jabatan">Jabatan</label>
-            <select name="id_jabatan" id="id_jabatan" class="form-control" required>
-              <option value="">-- Pilih Jabatan --</option>
+            <label for="id_jabatans">Jabatan <span class="text-danger">*Bisa pilih lebih dari satu</span></label>
+            <select name="id_jabatans[]" id="id_jabatans" class="form-control" multiple required>
+              <option value="" disabled>-- Pilih Jabatan --</option>
               @foreach($jabatans as $jabatan)
-                <option value="{{ $jabatan->id }}" {{ old('id_jabatan') == $jabatan->id ? 'selected' : '' }}>
+                <option value="{{ $jabatan->id }}"
+                  @if(is_array(old('id_jabatans')) && in_array($jabatan->id, old('id_jabatans'))) selected @endif>
                   {{ $jabatan->jabatan }}
                 </option>
               @endforeach
             </select>
+            <small class="text-muted d-block mt-2">
+              <i class="bi bi-info-circle"></i> Gunakan Ctrl+Click (atau Cmd+Click di Mac) untuk memilih lebih dari satu jabatan
+            </small>
           </div>
 
         </div>
@@ -197,16 +201,16 @@ $(document).ready(function() {
     });
 
     // ==========================================
-    // DEPENDENT DROPDOWN: JABATAN
+    // DEPENDENT DROPDOWN: JABATAN (Multiple Select)
     // ==========================================
     function loadJabatan(perangkatId) {
-        const $jabatanSelect = $('#id_jabatan');
+        const $jabatanSelect = $('#id_jabatans');
         console.log('📍 Loading Jabatan for Perangkat Daerah ID:', perangkatId);
 
-        $jabatanSelect.html('<option value="">Memuat data jabatan...</option>').prop('disabled', true);
+        $jabatanSelect.html('<option value="" disabled>Memuat data jabatan...</option>').prop('disabled', true);
 
         if (!perangkatId) {
-            $jabatanSelect.html('<option value="">-- Pilih Jabatan --</option>').prop('disabled', false);
+            $jabatanSelect.html('<option value="" disabled>-- Pilih Jabatan --</option>').prop('disabled', false);
             return;
         }
 
@@ -217,7 +221,7 @@ $(document).ready(function() {
             success: function(data) {
                 console.log('✅ Jabatan Data Received:', data);
                 $jabatanSelect.empty().prop('disabled', false);
-                $jabatanSelect.append('<option value="">-- Pilih Jabatan --</option>');
+                $jabatanSelect.append('<option value="" disabled>-- Pilih Jabatan --</option>');
 
                 if (data.length > 0) {
                     $.each(data, function(index, jabatan) {
@@ -227,16 +231,16 @@ $(document).ready(function() {
                         }));
                     });
                 } else {
-                    $jabatanSelect.append('<option value="">Tidak ada jabatan tersedia</option>');
+                    $jabatanSelect.append('<option value="" disabled>Tidak ada jabatan tersedia</option>');
                 }
 
-                @if(old('id_jabatan'))
-                    $jabatanSelect.val('{{ old("id_jabatan") }}');
+                @if(old('id_jabatans'))
+                    $jabatanSelect.val({!! json_encode((array)old('id_jabatans')) !!});
                 @endif
             },
             error: function(xhr, status, error) {
                 console.error('❌ Error loading jabatan:', error);
-                $jabatanSelect.html('<option value="">Gagal memuat jabatan</option>').prop('disabled', false);
+                $jabatanSelect.html('<option value="" disabled>Gagal memuat jabatan</option>').prop('disabled', false);
             }
         });
     }

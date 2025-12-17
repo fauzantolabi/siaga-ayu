@@ -26,10 +26,15 @@ class Jabatan extends Model
         return $this->belongsTo(PerangkatDaerah::class, 'id_perangkat_daerah');
     }
 
-    // Relasi ke Agenda
+    // Relasi ke Agenda (Many to Many)
     public function agendas()
     {
-        return $this->hasMany(Agenda::class, 'id_jabatan');
+        return $this->belongsToMany(
+            Agenda::class,
+            'agenda_jabatan',
+            'id_jabatan',
+            'id_agenda'
+        );
     }
 
     // Relasi ke Surat

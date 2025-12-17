@@ -21,17 +21,16 @@ class AgendaController extends Controller
 
         if ($user->role->role_name === 'User') {
             // User hanya melihat agenda dari perangkat daerahnya sendiri
-            $agendas = \App\Models\Agenda::with(['jabatan', 'perangkatDaerah'])
-                ->whereHas('jabatan', function ($q) use ($user) {
+            $agendas = \App\Models\Agenda::with(['jabatans', 'perangkatDaerah'])
+                ->whereHas('jabatans', function ($q) use ($user) {
                     $q->where('id_perangkat_daerah', $user->id_perangkat_daerah);
                 })
+                ->orderBy('tanggal', 'asc')
                 ->get();
         } else {
             // Admin melihat semua agenda
-            $agendas = Agenda::with(['jabatan', 'pakaian', 'surat'])
-                ->join('jabatans', 'agendas.id_jabatan', '=', 'jabatans.id')
-                ->orderBy('jabatans.prioritas', 'asc') // semakin kecil = jabatan lebih tinggi
-                ->select('agendas.*')
+            $agendas = Agenda::with(['jabatans', 'pakaian', 'surat'])
+                ->orderBy('tanggal', 'asc')
                 ->get();
         }
 
@@ -164,7 +163,8 @@ class AgendaController extends Controller
             'tempat' => 'required|string|max:255',
             'agenda' => 'required|string|max:255',
             'id_pakaian' => 'nullable|exists:pakaians,id',
-            'id_jabatan' => 'nullable|exists:jabatans,id',
+            'id_jabatans' => 'required|array|min:1',
+            'id_jabatans.*' => 'required|exists:jabatans,id',
             'id_user' => 'nullable|exists:users,id',
             'id_misi' => 'nullable|exists:misis,id',
             'id_program' => 'nullable|exists:programs,id',
@@ -178,33 +178,50 @@ class AgendaController extends Controller
             return redirect()->back()->withErrors(['id_surat' => 'Anda tidak memiliki akses ke surat ini.']);
         }
 
-        // Validasi: jabatan harus dari perangkat daerah surat
-        $jabatan = \App\Models\Jabatan::findOrFail($validatedData['id_jabatan']);
+        // Validasi: semua jabatan harus dari perangkat daerah surat
+        $jabatans = \App\Models\Jabatan::whereIn('id', $validatedData['id_jabatans'])->get();
+
+        if ($jabatans->count() !== count($validatedData['id_jabatans'])) {
+            return redirect()->back()->withErrors(['id_jabatans' => 'Salah satu atau lebih jabatan tidak valid.']);
+        }
 
         if ($user->role->role_name === 'User') {
-            if ($jabatan->id_perangkat_daerah != $surat->id_perangkat_daerah) {
-                return redirect()->back()
-                    ->withErrors(['id_jabatan' => 'Jabatan tidak sesuai dengan perangkat daerah surat Anda.']);
+            foreach ($jabatans as $jabatan) {
+                if ($jabatan->id_perangkat_daerah != $surat->id_perangkat_daerah) {
+                    return redirect()->back()
+                        ->withErrors(['id_jabatans' => 'Semua jabatan harus dari perangkat daerah surat Anda.']);
+                }
             }
         }
 
-        Agenda::create($validatedData);
+        // Buat agenda tanpa id_jabatan (karena menggunakan many-to-many)
+        $agendaData = $validatedData;
+        unset($agendaData['id_jabatans']);
 
-        return redirect()->route('agenda.index')->with('success', ' Agenda berhasil dibuat!');
+        $agenda = Agenda::create($agendaData);
+
+        // Attach jabatan ke agenda via pivot table
+        $agenda->jabatans()->attach($validatedData['id_jabatans']);
+
+        return redirect()->route('agenda.index')->with('success', 'Agenda berhasil dibuat!');
     }
 
 
 
     public function show($id)
     {
-        $agenda = Agenda::with(['jabatan.perangkatDaerah', 'pakaian', 'surat'])->findOrFail($id);
+        $agenda = Agenda::with(['jabatans', 'pakaian', 'surat'])->findOrFail($id);
         $user = auth()->user();
 
-        if (
-            $user->role->role_name === 'User' &&
-            $agenda->jabatan->perangkatDaerah->id !== $user->id_perangkat_daerah
-        ) {
-            abort(403, 'Anda tidak memiliki akses ke agenda ini.');
+        if ($user->role->role_name === 'User') {
+            // Check if user has access via any of the jabatans
+            $hasAccess = $agenda->jabatans->some(function ($jabatan) use ($user) {
+                return $jabatan->perangkatDaerah->id === $user->id_perangkat_daerah;
+            });
+
+            if (!$hasAccess) {
+                abort(403, 'Anda tidak memiliki akses ke agenda ini.');
+            }
         }
 
         return view('admin.agenda.show', compact('agenda'));
@@ -212,7 +229,7 @@ class AgendaController extends Controller
 
     public function edit($id)
     {
-        $agenda = Agenda::with(['surat', 'jabatan', 'pakaian', 'misi', 'program', 'photos'])->findOrFail($id);
+        $agenda = Agenda::with(['surat', 'jabatans', 'pakaian', 'misi', 'program', 'photos'])->findOrFail($id);
 
         $surats = Surat::all();
         $jabatans = Jabatan::all();
@@ -238,7 +255,8 @@ class AgendaController extends Controller
             'tanggal' => 'required|date',
             'waktu' => 'required',
             'tempat' => 'required|string|max:255',
-            'id_jabatan' => 'required|exists:jabatans,id',
+            'id_jabatans' => 'required|array|min:1',
+            'id_jabatans.*' => 'required|exists:jabatans,id',
             'id_pakaian' => 'nullable|exists:pakaians,id',
             'id_misi' => 'required|exists:misis,id',
             'id_program' => 'required|exists:programs,id',
@@ -251,19 +269,21 @@ class AgendaController extends Controller
         try {
             $agenda = Agenda::findOrFail($id);
 
-            // Update data agenda
+            // Update data agenda (tanpa id_jabatan)
             $agenda->update([
                 'id_surat' => $validated['id_surat'],
                 'agenda' => $validated['agenda'],
                 'tanggal' => $validated['tanggal'],
                 'waktu' => $validated['waktu'],
                 'tempat' => $validated['tempat'],
-                'id_jabatan' => $validated['id_jabatan'],
                 'id_pakaian' => $validated['id_pakaian'],
                 'id_misi' => $validated['id_misi'],
                 'id_program' => $validated['id_program'],
                 'resume' => $validated['resume'],
             ]);
+
+            // Sync jabatan ke agenda via pivot table
+            $agenda->jabatans()->sync($validated['id_jabatans']);
 
             // Hapus foto yang dipilih
             if ($request->has('hapus_foto')) {

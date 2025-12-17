@@ -53,7 +53,11 @@
                                 ->translatedFormat('l, d F Y') }}
                             {{ \Carbon\Carbon::parse($item->waktu)->format('H:i') }} WIB
                         </td>
-                            <td>{{ $item->jabatan->jabatan}}</td>
+                            <td>
+                              @foreach($item->jabatans as $jabatan)
+                                <span class="badge bg-primary">{{ $jabatan->jabatan }}</span>
+                              @endforeach
+                            </td>
                             <td>{{ $item->agenda }}</td>
                             <td>{{ $item->tempat }}</td>
                             {{-- <td>{{ $item->pakaian->pakaian }}</td> --}}
