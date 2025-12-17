@@ -67,7 +67,60 @@
 </div>
 @endsection
 
-@section('script')
+@section('scripts')
 <script src="{{ asset('assets/admin/extensions/simple-datatables/umd/simple-datatables.js') }}"></script>
-<script src="{{ asset('assets/admin/static/js/pages/simple-datatables.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('table1')) {
+      let dataTable = new simpleDatatables.DataTable(
+        document.getElementById('table1'),
+        {
+          searchable: true,
+          paging: true,
+          perPage: 10,
+          perPageSelect: [5, 10, 15, 20],
+          sortable: true,
+          layout: {
+            top: "{select}{search}",
+            bottom: "{info}{pager}",
+          },
+        }
+      );
+
+      function adaptPageDropdown() {
+        const selector = dataTable.wrapper.querySelector(".dataTable-selector");
+        if (selector) {
+          selector.parentNode.parentNode.insertBefore(selector, selector.parentNode);
+          selector.classList.add("form-select");
+        }
+      }
+
+      function adaptPagination() {
+        const paginations = dataTable.wrapper.querySelectorAll("ul.dataTable-pagination-list");
+        for (const pagination of paginations) {
+          pagination.classList.add(...["pagination", "pagination-primary"]);
+        }
+
+        const paginationLis = dataTable.wrapper.querySelectorAll("ul.dataTable-pagination-list li");
+        for (const paginationLi of paginationLis) {
+          paginationLi.classList.add("page-item");
+        }
+
+        const paginationLinks = dataTable.wrapper.querySelectorAll("ul.dataTable-pagination-list li a");
+        for (const paginationLink of paginationLinks) {
+          paginationLink.classList.add("page-link");
+        }
+      }
+
+      dataTable.on("datatable.init", () => {
+        adaptPageDropdown();
+        adaptPagination();
+      });
+
+      dataTable.on("datatable.update", () => adaptPagination());
+      dataTable.on("datatable.sort", () => adaptPagination());
+      dataTable.on("datatable.page", () => adaptPagination());
+    }
+  });
+</script>
 @endsection

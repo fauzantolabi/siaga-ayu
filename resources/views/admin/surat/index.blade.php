@@ -81,7 +81,73 @@
 </div>
 @endsection
 
-@section('script')
+@section('scripts')
 <script src="{{ asset('assets/admin/extensions/simple-datatables/umd/simple-datatables.js') }}"></script>
-<script src="{{ asset('assets/admin/static/js/pages/simple-datatables.js') }}"></script>
+<script>
+  console.log('simple-datatables loaded:', typeof simpleDatatables);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Document ready');
+    console.log('Table element:', document.getElementById('table1'));
+
+    if (document.getElementById('table1')) {
+      let dataTable = new simpleDatatables.DataTable(
+        document.getElementById("table1"),
+        {
+          searchable: true,
+          paging: true,
+          perPage: 10,
+          perPageSelect: [5, 10, 15, 20],
+          sortable: true,
+          layout: {
+            top: "{select}{search}",
+            bottom: "{info}{pager}",
+          },
+        }
+      );
+
+      console.log('DataTable initialized:', dataTable);
+
+      // Move "per page dropdown" selector element out of label
+      function adaptPageDropdown() {
+        const selector = dataTable.wrapper.querySelector(".dataTable-selector");
+        if (selector) {
+          selector.parentNode.parentNode.insertBefore(selector, selector.parentNode);
+          selector.classList.add("form-select");
+        }
+      }
+
+      // Add bs5 classes to pagination elements
+      function adaptPagination() {
+        const paginations = dataTable.wrapper.querySelectorAll("ul.dataTable-pagination-list");
+        for (const pagination of paginations) {
+          pagination.classList.add(...["pagination", "pagination-primary"]);
+        }
+
+        const paginationLis = dataTable.wrapper.querySelectorAll("ul.dataTable-pagination-list li");
+        for (const paginationLi of paginationLis) {
+          paginationLi.classList.add("page-item");
+        }
+
+        const paginationLinks = dataTable.wrapper.querySelectorAll("ul.dataTable-pagination-list li a");
+        for (const paginationLink of paginationLinks) {
+          paginationLink.classList.add("page-link");
+        }
+      }
+
+      dataTable.on("datatable.init", () => {
+        console.log('DataTable initialized event');
+        console.log('Wrapper HTML:', dataTable.wrapper);
+        console.log('Search element:', dataTable.wrapper.querySelector('.dataTable-search'));
+        console.log('Selector element:', dataTable.wrapper.querySelector('.dataTable-selector'));
+        adaptPageDropdown();
+        adaptPagination();
+      });
+
+      dataTable.on("datatable.update", () => adaptPagination());
+      dataTable.on("datatable.sort", () => adaptPagination());
+      dataTable.on("datatable.page", () => adaptPagination());
+    }
+  });
+</script>
 @endsection

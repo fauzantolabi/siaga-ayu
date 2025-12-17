@@ -1,5 +1,16 @@
 let dataTable = new simpleDatatables.DataTable(
-  document.getElementById("table1")
+  document.getElementById("table1"),
+  {
+    searchable: true,
+    paging: true,
+    perPage: 10,
+    perPageSelect: [5, 10, 15, 20],
+    sortable: true,
+    layout: {
+      top: "{search}",
+      bottom: "{info}{select}{pager}",
+    },
+  }
 )
 // Move "per page dropdown" selector element out of label
 // to make it work with bootstrap 5. Add bs5 classes.

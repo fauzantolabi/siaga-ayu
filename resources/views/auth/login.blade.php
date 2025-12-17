@@ -92,7 +92,7 @@
         .auth-title {
             font-size: 2rem;
             font-weight: 700;
-            color: #25396f;
+            color: #ffffff;
             margin-bottom: 0.5rem;
         }
 
@@ -103,13 +103,14 @@
 
         .form-group {
             margin-bottom: 1.5rem;
+            position: relative;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: #25396f;
+            color: #ffffff;
         }
 
         .form-control {
@@ -127,6 +128,43 @@
             outline: none;
         }
 
+        /* Password toggle styles */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 0.875rem;
+            font-weight: 600;
+            user-select: none;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #435ebe;
+        }
+
+        .toggle-password-link {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #435ebe;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .toggle-password-link:hover {
+            color: #364b96;
+            text-decoration: underline;
+        }
+
         .form-check {
             display: flex;
             align-items: center;
@@ -141,7 +179,7 @@
         }
 
         .form-check-label {
-            color: #fffff;
+            color: #6c757d;
             cursor: pointer;
             user-select: none;
         }
@@ -189,50 +227,6 @@
             background-color: #efe;
             color: #3c3;
             border: 1px solid #cfc;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 1.5rem 0;
-            display: none;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #dfe3e7;
-        }
-
-        .divider span {
-            padding: 0 1rem;
-            color: #6c757d;
-            font-size: 0.875rem;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-muted {
-            color: #6c757d;
-        }
-
-        .mt-3 {
-            margin-top: 1rem;
-        }
-
-        a {
-            color: #435ebe;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        a:hover {
-            color: #364b96;
         }
 
         /* Responsive */
@@ -320,20 +314,19 @@
             color: #8a8d93;
         }
 
-        body.theme-dark .divider::before,
-        body.theme-dark .divider::after {
-            border-bottom-color: #2e2e3e;
-        }
-
-        body.theme-dark .text-muted {
+        body.theme-dark .password-toggle {
             color: #8a8d93;
         }
 
-        body.theme-dark a {
+        body.theme-dark .password-toggle:hover {
             color: #6c7cff;
         }
 
-        body.theme-dark a:hover {
+        body.theme-dark .toggle-password-link {
+            color: #6c7cff;
+        }
+
+        body.theme-dark .toggle-password-link:hover {
             color: #5a6de8;
         }
     </style>
@@ -354,7 +347,7 @@
         <div id="auth-right">
             <div class="auth-form-wrapper">
                 <h1 class="auth-title">Log in.</h1>
-                <p class="auth-subtitle mb-5">Log in dengan username dan password Anda.</p>
+                <p class="auth-subtitle mb-5">Log in dengan email dan password Anda.</p>
 
                 {{-- Session Status --}}
                 @if (session('status'))
@@ -396,13 +389,23 @@
                     {{-- Password --}}
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password"
-                               id="password"
-                               name="password"
-                               class="form-control"
-                               placeholder="Masukkan password Anda"
-                               required
-                               autocomplete="current-password">
+                        <div class="password-wrapper">
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   class="form-control"
+                                   placeholder="Masukkan password Anda"
+                                   required
+                                   autocomplete="current-password"
+                                   style="padding-right: 80px;">
+                            <span class="password-toggle toggle-password" data-target="#password">
+                                Tampilkan
+                            </span>
+                        </div>
+                        {{-- Alternative: Link style below input --}}
+                        {{-- <a href="#" class="toggle-password-link toggle-password" data-target="#password">
+                            Tampilkan Password
+                        </a> --}}
                     </div>
 
                     {{-- Remember Me --}}
@@ -424,6 +427,26 @@
     </div>
 
     <script src="{{ asset('assets/admin/static/js/initTheme.js') }}"></script>
+
+    {{-- Toggle Password Script --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.toggle-password').forEach(function(element) {
+                element.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var target = document.querySelector(this.getAttribute('data-target'));
+
+                    if (target.getAttribute('type') === 'password') {
+                        target.setAttribute('type', 'text');
+                        this.textContent = 'Sembunyikan';
+                    } else {
+                        target.setAttribute('type', 'password');
+                        this.textContent = 'Tampilkan';
+                    }
+                });
+            });
+        });f
+    </script>
 </body>
 
 </html>
