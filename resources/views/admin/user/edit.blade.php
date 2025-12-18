@@ -33,14 +33,14 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="basicInput">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="Enter password" name="password" required value="{{ $user->password }} ">
+                            <label for="basicInput">Password <small class="text-muted">(Kosongkan jika tidak ingin mengubah)</small></label>
+                            <input type="password" class="form-control" id="password" placeholder="Enter password" name="password">
                             <small><a href="#" class="toggle-password" data-target="#password">Tampilkan Password</a></small>
                         </div>
 
                         <div class="form-group">
                             <label for="basicInput">Konfirmasi Password</label>
-                            <input type="password" class="form-control" id="password_confirmation" placeholder="Enter password" name="password_confirmation" required value="{{ $user->password }} ">
+                            <input type="password" class="form-control" id="password_confirmation" placeholder="Enter password" name="password_confirmation">
                             <small><a href="#" class="toggle-password" data-target="#password_confirmation">Tampilkan Password</a></small>
                         </div>
 
