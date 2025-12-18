@@ -1,3 +1,4 @@
+<!-- UNIQUE_MARKER_SIDEBAR_DECEMBER_2025 -->
 <div id="sidebar">
     <div class="sidebar-wrapper active">
         <div class="sidebar-header position-relative">
@@ -42,7 +43,7 @@
 
         <div class="sidebar-menu">
             <ul class="menu">
-                <li class="sidebar-title">Menu</li>
+                <li class="sidebar-title">Menu ({{ auth()->user()->fullname ?? 'Guest' }})</li>
 
                 {{-- Dashboard --}}
                 <li class="sidebar-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -52,31 +53,34 @@
                     </a>
                 </li>
 
-                {{-- Surat --}}
-                <li class="sidebar-item {{ request()->routeIs('surat.*') ? 'active' : '' }}">
-                    <a href="{{ route('surat.index') }}" class='sidebar-link'>
-                        <i class="bi bi-mailbox2"></i>
-                        <span>Surat</span>
-                    </a>
-                </li>
-
-                {{-- Agenda --}}
-                <li class="sidebar-item {{ request()->routeIs('agenda.*') ? 'active' : '' }}">
-                    <a href="{{ route('agenda.index') }}" class='sidebar-link'>
-                        <i class="bi bi-card-list"></i>
-                        <span>Agenda</span>
-                    </a>
-                </li>
-
-                 <li class="sidebar-item {{ request()->routeIs('jabatan.*') ? 'active' : '' }}">
-                        <a href="{{ route('jabatan.index') }}" class='sidebar-link'>
-                            <i class="bi bi-people-fill"></i>
-                            <span>Jabatan</span>
+                {{-- Hanya tampil untuk ADMIN dan USER (Bukan PIMPINAN) --}}
+                @if(auth()->check() && auth()->user()->role->role_name !== 'Pimpinan')
+                    {{-- Surat --}}
+                    <li class="sidebar-item {{ request()->routeIs('surat.*') ? 'active' : '' }}">
+                        <a href="{{ route('surat.index') }}" class='sidebar-link'>
+                            <i class="bi bi-mailbox2"></i>
+                            <span>Surat</span>
                         </a>
                     </li>
 
+                    {{-- Agenda --}}
+                    <li class="sidebar-item {{ request()->routeIs('agenda.*') ? 'active' : '' }}">
+                        <a href="{{ route('agenda.index') }}" class='sidebar-link'>
+                            <i class="bi bi-card-list"></i>
+                            <span>Agenda</span>
+                        </a>
+                    </li>
+
+                     <li class="sidebar-item {{ request()->routeIs('jabatan.*') ? 'active' : '' }}">
+                            <a href="{{ route('jabatan.index') }}" class='sidebar-link'>
+                                <i class="bi bi-people-fill"></i>
+                                <span>Jabatan</span>
+                            </a>
+                        </li>
+                @endif
+
                 {{-- Hanya tampil untuk ADMIN --}}
-                @if(auth()->user() && strtolower(auth()->user()->role->role_name ?? '') === 'admin')
+                @if(auth()->check() && auth()->user()->role->role_name === 'Admin')
                     <li class="sidebar-item {{ request()->routeIs('perangkat_daerah.*') ? 'active' : '' }}">
                         <a href="{{ route('perangkat_daerah.index') }}" class='sidebar-link'>
                             <i class="bi bi-house-fill"></i>

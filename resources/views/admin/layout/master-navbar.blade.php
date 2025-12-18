@@ -929,32 +929,35 @@
                     </a>
                 </div>
 
-                {{-- Surat --}}
-                <div class="sidebar-item">
-                    <a href="{{ route('surat.index') }}" class="sidebar-link {{ request()->routeIs('surat.*') ? 'active' : '' }}">
-                        <i class="bi bi-mailbox2"></i>
-                        <span>Surat</span>
-                    </a>
-                </div>
+                {{-- Surat, Agenda, Jabatan (hanya untuk Admin dan User, bukan Pimpinan) --}}
+                @if(auth()->check() && auth()->user()->role->role_name !== 'Pimpinan')
+                    {{-- Surat --}}
+                    <div class="sidebar-item">
+                        <a href="{{ route('surat.index') }}" class="sidebar-link {{ request()->routeIs('surat.*') ? 'active' : '' }}">
+                            <i class="bi bi-mailbox2"></i>
+                            <span>Surat</span>
+                        </a>
+                    </div>
 
-                {{-- Agenda --}}
-                <div class="sidebar-item">
-                    <a href="{{ route('agenda.index') }}" class="sidebar-link {{ request()->routeIs('agenda.*') ? 'active' : '' }}">
-                        <i class="bi bi-card-list"></i>
-                        <span>Agenda</span>
-                    </a>
-                </div>
+                    {{-- Agenda --}}
+                    <div class="sidebar-item">
+                        <a href="{{ route('agenda.index') }}" class="sidebar-link {{ request()->routeIs('agenda.*') ? 'active' : '' }}">
+                            <i class="bi bi-card-list"></i>
+                            <span>Agenda</span>
+                        </a>
+                    </div>
 
-                {{-- Jabatan --}}
-                <div class="sidebar-item">
-                    <a href="{{ route('jabatan.index') }}" class="sidebar-link {{ request()->routeIs('jabatan.*') ? 'active' : '' }}">
-                        <i class="bi bi-people-fill"></i>
-                        <span>Jabatan</span>
-                    </a>
-                </div>
+                    {{-- Jabatan --}}
+                    <div class="sidebar-item">
+                        <a href="{{ route('jabatan.index') }}" class="sidebar-link {{ request()->routeIs('jabatan.*') ? 'active' : '' }}">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Jabatan</span>
+                        </a>
+                    </div>
+                @endif
 
                 {{-- Master Data (Hanya Admin) --}}
-                @if(auth()->user() && strtolower(auth()->user()->role->role_name ?? '') === 'admin')
+                @if(auth()->check() && auth()->user()->role->role_name === 'Admin')
                 <div class="sidebar-title">Master Data</div>
 
                 <div class="sidebar-item">
