@@ -100,9 +100,12 @@
                                     <button type="submit" class="btn btn-primary me-2">
                                         <i class="bi bi-search"></i> Tampilkan
                                     </button>
-                                    <button type="button" class="btn btn-secondary" id="resetFilter">
+                                    <button type="button" class="btn btn-secondary me-2" id="resetFilter">
                                         <i class="bi bi-arrow-clockwise"></i> Reset
                                     </button>
+                                    <a href="{{ route('dashboard.downloadReport', request()->query()) }}" class="btn btn-success" target="_blank">
+                                        <i class="bi bi-download"></i> Download PDF
+                                    </a>
                                 </div>
                             </form>
                         </div>
@@ -624,5 +627,45 @@ $(document).ready(function() {
     @endif
 });
 </script>
+
+<style>
+    {{-- Adjust card padding and spacing --}}
+    .card {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .page-content {
+        padding-bottom: 2rem;
+    }
+
+    {{-- Stat cards styling --}}
+    .card.border-0 {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card.border-0:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    {{-- Tab content spacing --}}
+    .tab-content {
+        padding-top: 1rem;
+    }
+
+    {{-- Accordion styling --}}
+    .accordion-button {
+        padding: 0.75rem 1rem;
+    }
+
+    {{-- Table spacing --}}
+    table {
+        margin-bottom: 1rem;
+    }
+</style>
+
 @endsection
-<!-- TEST MARKER DASHBOARD 12/18/2025 09:37:17 -->

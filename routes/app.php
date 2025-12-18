@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard - bisa diakses semua user
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/download-report', [DashboardController::class, 'downloadReport'])->name('dashboard.downloadReport');
 
     // Profile user
     Route::get('/profile/show', 'App\Http\Controllers\ProfileUserController@show')->name('profile.show');

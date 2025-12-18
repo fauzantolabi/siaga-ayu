@@ -204,4 +204,55 @@ class DashboardController extends Controller
             'bulan'
         ));
     }
+
+    /**
+     * Download laporan agenda dalam format PDF
+     */
+    public function downloadReport(Request $request)
+    {
+        $user = Auth::user();
+
+        // Parse filter
+        $selectedDate = $request->get('tanggal')
+            ? Carbon::parse($request->get('tanggal'))
+            : Carbon::today();
+        $selectedPD = $request->get('id_perangkat_daerah');
+
+        // Build query
+        $agendaQuery = Agenda::query();
+
+        if ($user->role->role_name === 'User') {
+            $agendaQuery->whereHas('jabatans', function ($q) use ($user) {
+                $q->where('id_perangkat_daerah', $user->id_perangkat_daerah);
+            });
+        } elseif ($selectedPD) {
+            $agendaQuery->whereHas('jabatans', fn($q) => $q->where('id_perangkat_daerah', $selectedPD));
+        }
+
+        // Get agendas for selected date
+        $agendas = $agendaQuery
+            ->whereDate('tanggal', $selectedDate->format('Y-m-d'))
+            ->with(['pakaian', 'jabatans.perangkatDaerah', 'surat', 'misi', 'program', 'user'])
+            ->orderBy('jam_mulai', 'asc')
+            ->get();
+
+        // Group by perangkat daerah for admin
+        if ($user->role->role_name === 'Admin') {
+            $agendas = $agendas->groupBy('jabatans.0.perangkatDaerah.perangkat_daerah');
+        }
+
+        $html = view('admin.reports.agenda-pdf', compact(
+            'agendas',
+            'selectedDate',
+            'user',
+            'selectedPD'
+        ))->render();
+
+        $pdf = \PDF::loadHTML($html)
+            ->setPaper('a4')
+            ->setOrientation('portrait');
+
+        $filename = 'Laporan-Agenda-' . $selectedDate->format('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
+    }
 }
