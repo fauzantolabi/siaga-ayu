@@ -93,13 +93,20 @@
             width: 40px;
             height: 40px;
             margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-text {
+            flex: 1;
+            min-width: 0;
         }
 
         .sidebar-brand-text h5 {
             margin: 0;
             color: #435ebe;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
+            line-height: 1.2;
         }
 
         body.theme-dark .sidebar-brand-text h5 {
@@ -108,7 +115,10 @@
 
         .sidebar-brand-text small {
             color: #6c757d;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
+            display: block;
+            line-height: 1.2;
+            letter-spacing: 0.3px;
         }
 
         body.theme-dark .sidebar-brand-text small {
